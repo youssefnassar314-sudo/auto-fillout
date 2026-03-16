@@ -91,80 +91,79 @@
     }
 
     // 4. The Main Generation Function
-    async function generateDocument() {
-        const template = document.getElementById('tplFile').files[0];
-        const rawText = document.getElementById('rawInput').value;
-        const sketch = document.getElementById('sketchFile').files[0];
-        const signature = document.getElementById('sigFile').files[0];
+async function generateDocument() {
+    const template = document.getElementById('tplFile').files[0];
+    const rawText = document.getElementById('rawInput').value;
+    const sketch = document.getElementById('sketchFile').files[0];
+    const signature = document.getElementById('sigFile').files[0];
 
-        if (!template || !rawText) return alert("Kulang! Paki-upload ang template at i-paste ang data.");
+    if (!template || !rawText) return alert("Kulang ang template o data!");
 
-        try {
-            statusDiv.innerText = "⚙️ Processing... Mangyaring maghintay.";
-            
-            // Sabay-sabay basahin para iwas initialization errors
-            const [tBuf, skBuf, siBuf] = await Promise.all([
-                getFileBuffer(template),
-                getFileBuffer(sketch),
-                getFileBuffer(signature)
-            ]);
+    try {
+        document.getElementById('status').innerText = "⚙️ Processing... March 16, 2026";
+        
+        const [tBuf, skBuf, siBuf] = await Promise.all([
+            getFileBuffer(template),
+            getFileBuffer(sketch),
+            getFileBuffer(signature)
+        ]);
 
-            const zip = new PizZip(tBuf);
-            
-            // Image Module Setup
-            const ImgConstructor = window.ImageModule || window.DocxtemplaterImageModule;
-            const imgOptions = {
-                centered: false,
-                getImage: (tagValue) => tagValue,
-                getSize: (img, tagValue, tagName) => {
-                    if (tagName === "sketch") return [350, 220]; // Sketch box
-                    if (tagName === "signature") return [160, 80]; // Pirma size
-                    return [100, 100];
-                }
-            };
+        const zip = new PizZip(tBuf);
+        const ImgConstructor = window.ImageModule || window.DocxtemplaterImageModule;
 
-            const doc = new docxtemplater(zip, {
-                modules: [new ImgConstructor(imgOptions)],
-                paragraphLoop: true,
-                linebreaks: true
-            });
+        const imgOptions = {
+            centered: false,
+            getImage: (tagValue) => tagValue,
+            getSize: (img, tagValue, tagName) => {
+                if (!tagValue) return [0, 0]; // Safety check para sa missing images
+                if (tagName === "sketch") return [350, 220];
+                if (tagName === "signature") return [160, 80];
+                return [100, 100];
+            }
+        };
 
-            // 5. I-render ang final content
-            doc.render({
-                date: "March 16, 2026", // Automatic based on current time
-                last_name: extractData(rawText, "LAST NAME"),
-                first_name: extractData(rawText, "FIRST NAME"),
-                middle_name: extractData(rawText, "MIDDLE NAME"),
-                mobile: extractData(rawText, "MOBILE PHONE"),
-                email: extractData(rawText, "EMAIL ADDRESS"),
-                id_no: extractData(rawText, "ID TYPE/NO."),
-                house_no: extractData(rawText, "HOUSE/BLOCK/UNIT NO."),
-                street: extractData(rawText, "STREET"),
-                barangay: extractData(rawText, "BARANGAY"),
-                municipality: extractData(rawText, "MUNICIPALITY"),
-                sketch: skBuf,
-                signature: siBuf
-            });
+        const doc = new docxtemplater(zip, {
+            modules: [new ImgConstructor(imgOptions)],
+            paragraphLoop: true,
+            linebreaks: true
+        });
 
-            const out = doc.getZip().generate({ 
-                type: "blob",
-                mimeType: "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-            });
+        doc.render({
+            date: "March 16, 2026",
+            last_name: extractData(rawText, "LAST NAME"),
+            first_name: extractData(rawText, "FIRST NAME"),
+            middle_name: extractData(rawText, "MIDDLE NAME"),
+            mobile: extractData(rawText, "MOBILE PHONE"),
+            email: extractData(rawText, "EMAIL ADDRESS"),
+            id_no: extractData(rawText, "ID TYPE/NO."),
+            birthdate: extractData(rawText, "BIRTHDATE"), // New
+            age: extractData(rawText, "AGE"), // New
+            sex: extractData(rawText, "SEX"), // New
+            civil_status: extractData(rawText, "CIVIL STATUS"), // New
+            spouse_name: extractData(rawText, "SPOUSE NAME"), // New
+            house_no: extractData(rawText, "HOUSE/BLOCK/UNIT NO."),
+            street: extractData(rawText, "STREET"),
+            barangay: extractData(rawText, "BARANGAY"),
+            municipality: extractData(rawText, "MUNICIPALITY"),
+            sketch: skBuf,
+            signature: siBuf
+        });
 
-            // 6. Download naming logic
-            const lName = extractData(rawText, "LAST NAME") || "Client";
-            saveAs(out, `SKYLINE_Application_${lName}.docx`);
-            
-            statusDiv.innerText = "✅ SUCCESS: File Downloaded!";
-            statusDiv.className = "status-bar ready";
-            
-        } catch (error) {
-            console.error(error);
-            alert("Error: " + error.message);
-            statusDiv.innerText = "❌ FAILED: Check your Template tags.";
-            statusDiv.className = "status-bar error";
+        const out = doc.getZip().generate({ type: "blob" });
+        saveAs(out, `Application_${extractData(rawText, "LAST NAME")}.docx`);
+        document.getElementById('status').innerText = "✅ Success!";
+        
+    } catch (error) {
+        console.error(error);
+        // Ipakita ang eksaktong tag na may error
+        let errorMsg = error.message;
+        if (error.properties && error.properties.errors) {
+            errorMsg = error.properties.errors.map(e => e.properties.explanation).join("\n");
         }
+        alert("SABLAY: " + errorMsg);
+        document.getElementById('status').innerText = "❌ FAILED: Check Console.";
     }
+}
 </script>
 
 </body>
