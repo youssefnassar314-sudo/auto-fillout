@@ -7,7 +7,149 @@
 <script src="https://unpkg.com/docx-templates/lib/browser.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
 
-<style>
+<style>a<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Cheetah Pro | Docx.js Edition 🐆</title>
+    <script src="https://unpkg.com/docx@8.5.0/build/index.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 20px; background: #1a1a1a; color: #eee; }
+        .card { max-width: 650px; margin: auto; background: #2d2d2d; padding: 30px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); border: 1px solid #444; }
+        .status { padding: 12px; margin-bottom: 20px; border-radius: 8px; text-align: center; font-weight: bold; font-size: 0.9em; }
+        .ready { background: #1b4332; color: #8dfca1; border: 1px solid #2d6a4f; }
+        textarea { width: 100%; height: 180px; margin: 10px 0; border-radius: 8px; border: 1px solid #444; background: #121212; color: #00ff00; padding: 12px; font-family: monospace; box-sizing: border-box; }
+        label { display: block; margin-top: 15px; font-weight: bold; color: #bbb; }
+        input[type="file"] { margin: 10px 0; color: #888; }
+        button { width: 100%; padding: 18px; background: #ff9f1c; color: #000; border: none; border-radius: 10px; cursor: pointer; font-weight: bold; font-size: 1.1em; transition: 0.3s; margin-top: 20px; }
+        button:hover { background: #ffbf69; transform: translateY(-2px); }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <h2 style="color: #ff9f1c; margin-top: 0;">Cheetah Pro: Docx.js Engine 🐆</h2>
+    <div id="status" class="status ready">SYSTEM READY | MARCH 16, 2026</div>
+
+    <label>1. PASTE CLIENT DATA BLOCK</label>
+    <textarea id="raw" placeholder="LAST NAME: Dela Cruz&#10;FIRST NAME: Juan..."></textarea>
+
+    <div style="display: flex; gap: 20px;">
+        <div style="flex: 1;">
+            <label>2. Sketch (JPG)</label>
+            <input type="file" id="sk" accept="image/jpeg">
+        </div>
+        <div style="flex: 1;">
+            <label>3. Signature (PNG)</label>
+            <input type="file" id="si" accept="image/png">
+        </div>
+    </div>
+
+    <button onclick="generateDoc()">Generate Professional DOCX</button>
+</div>
+
+<script>
+    // Helper para basahin ang file as ArrayBuffer
+    const getBuf = (f) => new Promise((res) => {
+        if (!f) return res(null);
+        const r = new FileReader();
+        r.onload = (e) => res(e.target.result);
+        r.readAsArrayBuffer(f);
+    });
+
+    // Helper para sa data extraction
+    function extract(text, label) {
+        const regex = new RegExp(label + "\\s*:\\s*(.*)", "i");
+        const match = text.match(regex);
+        return match ? match[1].trim() : "N/A";
+    }
+
+    async function generateDoc() {
+        const rawText = document.getElementById('raw').value;
+        const sketchFile = document.getElementById('sk').files[0];
+        const sigFile = document.getElementById('si').files[0];
+
+        if (!rawText) return alert("Paki-paste ang Data Block!");
+
+        try {
+            document.getElementById('status').innerText = "⚙️ GENERATING DOCUMENT...";
+            
+            const skBuf = await getBuf(sketchFile);
+            const siBuf = await getBuf(sigFile);
+
+            const { Document, Packer, Paragraph, TextRun, ImageRun, AlignmentType, HeadingLevel } = docx;
+
+            // Dito binubuo ang structure ng Page
+            const doc = new Document({
+                sections: [{
+                    properties: {},
+                    children: [
+                        new Paragraph({
+                            text: "SKYLINE APPLICATION FORM",
+                            heading: HeadingLevel.HEADING_1,
+                            alignment: AlignmentType.CENTER,
+                        }),
+                        new Paragraph({
+                            children: [
+                                new TextRun({ text: `Date Generated: March 16, 2026`, italics: true }),
+                            ],
+                            spacing: { after: 300 },
+                        }),
+                        
+                        // Personal Information Table alternative (Paragraph style)
+                        new Paragraph({ children: [new TextRun({ text: "CLIENT DETAILS", bold: true, size: 28 })] }),
+                        new Paragraph({ children: [new TextRun({ text: `Name: ${extract(rawText, "LAST NAME")}, ${extract(rawText, "FIRST NAME")} ${extract(rawText, "MIDDLE NAME")}`, size: 24 })] }),
+                        new Paragraph({ children: [new TextRun({ text: `Mobile: ${extract(rawText, "MOBILE PHONE")}`, size: 24 })] }),
+                        new Paragraph({ children: [new TextRun({ text: `Email: ${extract(rawText, "EMAIL ADDRESS")}`, size: 24 })] }),
+                        new Paragraph({ children: [new TextRun({ text: `Address: ${extract(rawText, "HOUSE/BLOCK/UNIT NO.")} ${extract(rawText, "STREET")}, ${extract(rawText, "BARANGAY")}, ${extract(rawText, "MUNICIPALITY")}`, size: 24 })], spacing: { after: 400 } }),
+
+                        // SKETCH SECTION
+                        new Paragraph({ children: [new TextRun({ text: "LOCATION SKETCH:", bold: true })] }),
+                        ...(skBuf ? [
+                            new Paragraph({
+                                children: [
+                                    new ImageRun({
+                                        data: skBuf,
+                                        transformation: { width: 450, height: 250 },
+                                    }),
+                                ],
+                            })
+                        ] : [new Paragraph("No sketch uploaded.")]),
+
+                        new Paragraph({ spacing: { before: 400 } }),
+
+                        // SIGNATURE SECTION
+                        new Paragraph({ children: [new TextRun({ text: "CLIENT SIGNATURE:", bold: true })] }),
+                        ...(siBuf ? [
+                            new Paragraph({
+                                children: [
+                                    new ImageRun({
+                                        data: siBuf,
+                                        transformation: { width: 150, height: 70 },
+                                    }),
+                                ],
+                            })
+                        ] : [new Paragraph("No signature uploaded.")]),
+                    ],
+                }],
+            });
+
+            // Conversion to Blob and Download
+            const blob = await Packer.toBlob(doc);
+            const lName = extract(rawText, "LAST NAME");
+            saveAs(blob, `SKYLINE_PRO_${lName}.docx`);
+
+            document.getElementById('status').innerText = "✅ SUCCESS: DOWNLOADED";
+        } catch (err) {
+            console.error(err);
+            alert("Error: " + err.message);
+        }
+    }
+</script>
+
+</body>
+</html>
 body { font-family: sans-serif; padding: 20px; background: #f4f4f4; }
 .card { max-width: 600px; margin: auto; background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
 .status { padding: 10px; margin-bottom: 20px; border-radius: 6px; text-align: center; font-weight: bold; }
