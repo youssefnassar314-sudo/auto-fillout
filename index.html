@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Cheetah Pro | Zero-Crash Edition 🐆</title>
+<title>Cheetah Pro | Zero Crash 🐆</title>
 
 <script src="pizzip.min.js"></script>
 <script src="docxtemplater.js"></script>
@@ -10,13 +10,57 @@
 <script src="docxtemplater-image-module-free.js"></script>
 
 <style>
-body { font-family: sans-serif; padding: 20px; background: #f4f4f4; }
-.card { max-width: 600px; margin: auto; background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
-.status { padding: 10px; margin-bottom: 20px; border-radius: 6px; text-align: center; font-weight: bold; }
-.ready { background: #d4edda; color: #155724; }
-textarea { width: 100%; height: 150px; margin: 10px 0; border-radius: 5px; border: 1px solid #ccc; padding: 10px; }
-input { display: block; margin-bottom: 10px; }
-button { width: 100%; padding: 15px; background: #28a745; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; }
+
+body{
+font-family:sans-serif;
+background:#f4f4f4;
+padding:20px;
+}
+
+.card{
+max-width:600px;
+margin:auto;
+background:white;
+padding:25px;
+border-radius:12px;
+box-shadow:0 4px 10px rgba(0,0,0,0.1);
+}
+
+.status{
+padding:10px;
+margin-bottom:20px;
+border-radius:6px;
+text-align:center;
+font-weight:bold;
+background:#d4edda;
+color:#155724;
+}
+
+textarea{
+width:100%;
+height:150px;
+margin:10px 0;
+border-radius:6px;
+border:1px solid #ccc;
+padding:10px;
+}
+
+input{
+display:block;
+margin-bottom:10px;
+}
+
+button{
+width:100%;
+padding:15px;
+background:#28a745;
+color:white;
+border:none;
+border-radius:8px;
+font-weight:bold;
+cursor:pointer;
+}
+
 </style>
 </head>
 
@@ -25,117 +69,122 @@ button { width: 100%; padding: 15px; background: #28a745; color: white; border: 
 <div class="card">
 
 <h2>Cheetah Pro: Magic Fill 🐆</h2>
-<div id="status" class="status ready">SYSTEM READY | March 16, 2026</div>
 
-<label>1. Template (SKYLINE.docx)</label>
+<div id="status" class="status">
+SYSTEM READY
+</div>
+
+<label>Template (.docx)</label>
 <input type="file" id="tpl">
 
-<label>2. Data Block</label>
-<textarea id="raw" placeholder="PASTE DATA HERE..."></textarea>
+<label>Client Data</label>
+<textarea id="raw" placeholder="PASTE CLIENT DATA"></textarea>
 
-<label>3. Images (Optional)</label>
-<input type="file" id="sk" accept="image/png, image/jpeg">
-<input type="file" id="si" accept="image/png, image/jpeg">
+<label>Sketch Image</label>
+<input type="file" id="sk" accept="image/png,image/jpeg">
 
-<button onclick="generateDocument()">Generate & Download</button>
+<label>Signature Image</label>
+<input type="file" id="si" accept="image/png,image/jpeg">
+
+<button onclick="generateDocument()">Generate Document</button>
 
 </div>
 
 <script>
 
-// transparent pixel para hindi mag crash kapag walang image
-const base64Pixel="iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==";
-
-function base64ToArrayBuffer(base64){
-const binary=window.atob(base64);
-const len=binary.length;
-const bytes=new Uint8Array(len);
-for(let i=0;i<len;i++){
-bytes[i]=binary.charCodeAt(i);
-}
-return bytes.buffer;
-}
-
-const transparentPixelBuf=base64ToArrayBuffer(base64Pixel);
-
-// convert file to buffer
-function getBuffer(file){
-return new Promise((resolve)=>{
-if(!file) return resolve(null);
-const reader=new FileReader();
-reader.onload=(e)=>resolve(e.target.result);
-reader.readAsArrayBuffer(file);
-});
-}
-
-// extract text values
 function extract(text,label){
-const regex=new RegExp(label+"\\s*:\\s*(.+)","i");
+
+const regex=new RegExp(label+"\\s*:\\s*(.*)","i");
+
 const match=text.match(regex);
+
 return match?match[1].trim():"";
+
+}
+
+function getBuffer(file){
+
+return new Promise((resolve,reject)=>{
+
+if(!file){
+resolve(null);
+return;
+}
+
+const reader=new FileReader();
+
+reader.onload=e=>resolve(e.target.result);
+
+reader.onerror=err=>reject(err);
+
+reader.readAsArrayBuffer(file);
+
+});
+
 }
 
 async function generateDocument(){
 
-const template=document.getElementById("tpl").files[0];
-const rawText=document.getElementById("raw").value;
-const sketch=document.getElementById("sk").files[0];
-const signature=document.getElementById("si").files[0];
-
-if(!template||!rawText){
-alert("Upload template at client data muna.");
-return;
-}
-
 try{
 
-const status=document.getElementById("status");
-status.innerText="⚙️ Processing...";
-status.style.background="#fff3cd";
-status.style.color="#856404";
+const template=document.getElementById("tpl").files[0];
 
-const templateBuf=await getBuffer(template);
-const sketchBuf=await getBuffer(sketch);
-const signatureBuf=await getBuffer(signature);
+const rawText=document.getElementById("raw").value;
 
-// kung walang image gamitin transparent pixel
-const finalSketch=sketchBuf||transparentPixelBuf;
-const finalSignature=signatureBuf||transparentPixelBuf;
+const sketchFile=document.getElementById("sk").files[0];
 
-const zip=new PizZip(templateBuf);
+const signatureFile=document.getElementById("si").files[0];
 
-const ImgConstructor=window.ImageModule||window.DocxtemplaterImageModule;
+if(!template){
+
+alert("Upload template first");
+
+return;
+
+}
+
+const templateBuffer=await getBuffer(template);
+
+const sketchBuffer=await getBuffer(sketchFile);
+
+const signatureBuffer=await getBuffer(signatureFile);
+
+const zip=new PizZip(templateBuffer);
 
 const imageOptions={
 
 centered:false,
 
 getImage:function(tagValue){
-if(!tagValue){
-return transparentPixelBuf;
-}
+
+if(!tagValue) return null;
+
 return tagValue;
+
 },
 
 getSize:function(img,tagValue,tagName){
 
-if(tagName==="sketch"){
-return [350,220];
-}
+if(tagName==="sketch") return [350,220];
 
-if(tagName==="signature"){
-return [160,80];
-}
+if(tagName==="signature") return [160,80];
 
-return [1,1];
+return [100,100];
+
 }
 
 };
 
-const doc=new docxtemplater(zip,{
-modules:[new ImgConstructor(imageOptions)],
+const imageModule=new window.ImageModule(imageOptions);
+
+const doc=new window.docxtemplater(zip,{
+
+modules:[imageModule],
+
 paragraphLoop:true,
+
 linebreaks:true
+
 });
 
 doc.render({
@@ -155,34 +204,32 @@ street:extract(rawText,"STREET"),
 barangay:extract(rawText,"BARANGAY"),
 municipality:extract(rawText,"MUNICIPALITY"),
 
-sketch:finalSketch,
-signature:finalSignature
+sketch:sketchBuffer,
+signature:signatureBuffer
 
 });
 
-const output=doc.getZip().generate({
+const out=doc.getZip().generate({
+
 type:"blob",
+
 mimeType:"application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+
 });
 
 const clientName=extract(rawText,"LAST NAME")||"Client";
 
-saveAs(output,`SKYLINE_Application_${clientName}.docx`);
+saveAs(out,"SKYLINE_Application_"+clientName+".docx");
 
-status.innerText="✅ SUCCESS! File Ready";
-status.style.background="#d4edda";
-status.style.color="#155724";
+document.getElementById("status").innerText="SUCCESS!";
 
-}catch(err){
+}catch(error){
 
-console.error(err);
+console.error(error);
 
-const status=document.getElementById("status");
-status.innerText="❌ ERROR: "+err.message;
-status.style.background="#f8d7da";
-status.style.color="#721c24";
+alert(error.message);
 
-alert("Error: "+err.message);
+document.getElementById("status").innerText="ERROR";
 
 }
 
@@ -191,4 +238,4 @@ alert("Error: "+err.message);
 </script>
 
 </body>
-</html>
+</html>s
