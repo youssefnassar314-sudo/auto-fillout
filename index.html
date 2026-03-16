@@ -2,46 +2,162 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Cheetah Pro | Modern Engine 🐆</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CHEETAH PRO 2026 | MODERN ENGINE</title>
+    
     <script src="https://unpkg.com/docx-templates/lib/bundle.umd.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
 
     <style>
-        :root { --accent: #00d4ff; --bg: #050505; }
-        body { font-family: 'Inter', sans-serif; background: var(--bg); color: #fff; padding: 40px; }
-        .card { max-width: 600px; margin: auto; background: #111; padding: 30px; border-radius: 20px; border: 1px solid #222; box-shadow: 0 15px 35px rgba(0,212,255,0.1); }
-        .status { font-family: monospace; color: var(--accent); margin-bottom: 20px; font-size: 0.8rem; letter-spacing: 1px; }
-        textarea { width: 100%; height: 120px; background: #000; border: 1px solid #333; color: #00ff9d; padding: 12px; border-radius: 10px; resize: none; }
-        input[type="file"] { margin: 15px 0; font-size: 0.8rem; color: #666; }
-        button { width: 100%; padding: 18px; background: var(--accent); color: #000; border: none; border-radius: 12px; font-weight: 800; cursor: pointer; transition: 0.3s; }
-        button:hover { filter: brightness(1.2); transform: translateY(-2px); }
-        label { display: block; margin-top: 15px; font-size: 0.7rem; font-weight: bold; color: #444; text-transform: uppercase; }
+        :root {
+            --neon: #00ff9d;
+            --blue: #00d4ff;
+            --bg: #0a0a0c;
+            --card: #141417;
+            --border: #2a2a30;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, sans-serif;
+            background: var(--bg);
+            color: #eee;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 650px;
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.6);
+            position: relative;
+        }
+
+        .container::after {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; height: 5px;
+            background: linear-gradient(90deg, var(--neon), var(--blue));
+            border-radius: 20px 20px 0 0;
+        }
+
+        h2 {
+            margin: 0 0 5px 0;
+            color: var(--neon);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            font-size: 1.5rem;
+        }
+
+        .status-bar {
+            background: rgba(0, 255, 157, 0.05);
+            border: 1px solid rgba(0, 255, 157, 0.2);
+            padding: 12px;
+            border-radius: 8px;
+            font-family: monospace;
+            font-size: 0.8rem;
+            margin-bottom: 25px;
+            color: var(--neon);
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 0.75rem;
+            font-weight: bold;
+            color: #888;
+            text-transform: uppercase;
+        }
+
+        textarea {
+            width: 100%;
+            height: 150px;
+            background: #000;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            color: #00ff00;
+            padding: 15px;
+            font-family: 'Courier New', monospace;
+            resize: none;
+            box-sizing: border-box;
+            margin-bottom: 20px;
+            outline: none;
+        }
+
+        textarea:focus { border-color: var(--neon); }
+
+        .file-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .input-group {
+            background: #1c1c21;
+            padding: 15px;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+        }
+
+        input[type="file"] {
+            width: 100%;
+            font-size: 0.7rem;
+            color: #666;
+        }
+
+        button {
+            width: 100%;
+            padding: 20px;
+            background: var(--neon);
+            color: #000;
+            border: none;
+            border-radius: 12px;
+            font-weight: 900;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: 0.3s;
+            box-shadow: 0 10px 20px rgba(0, 255, 157, 0.2);
+        }
+
+        button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 30px rgba(0, 255, 157, 0.4);
+        }
     </style>
 </head>
 <body>
 
-<div class="card">
-    <div class="status">ENGINE: DOCX-TEMPLATES_V4 // MARCH 16, 2026</div>
-    <h2 style="margin-top:0">Cheetah Pro 🐆</h2>
+<div class="container">
+    <h2>CHEETAH PRO OS 🐆</h2>
+    <div id="status" class="status-bar">READY_FOR_EXECUTION_MARCH_16_2026</div>
 
-    <label>1. SKYLINE Template (.docx)</label>
-    <input type="file" id="tpl">
+    <label>1. Application Template (SKYLINE - Copy.docx)</label>
+    <div class="input-group" style="margin-bottom: 20px;">
+        <input type="file" id="tpl">
+    </div>
 
-    <label>2. Data Block</label>
-    <textarea id="raw" placeholder="PASTE DATA HERE..."></textarea>
+    <label>2. Client Data Block</label>
+    <textarea id="raw" placeholder="LAST NAME: Cruz&#10;FIRST NAME: Juan..."></textarea>
 
-    <div style="display: flex; gap: 15px;">
-        <div style="flex: 1;">
-            <label>Sketch</label>
+    <div class="file-grid">
+        <div class="input-group">
+            <label>Location Sketch</label>
             <input type="file" id="sk">
         </div>
-        <div style="flex: 1;">
+        <div class="input-group">
             <label>Signature</label>
             <input type="file" id="si">
         </div>
     </div>
 
-    <button onclick="buildReport()">Execute Generation</button>
+    <button onclick="executeEngine()">Generate Skyline Document</button>
 </div>
 
 <script>
@@ -55,57 +171,65 @@
     function extract(text, label) {
         const regex = new RegExp(label + "\\s*:\\s*(.*)", "i");
         const match = text.match(regex);
-        return match ? match[1].trim() : "N/A";
+        return match ? match[1].trim() : "---";
     }
 
-    async function buildReport() {
-    const tFile = document.getElementById('tpl').files[0];
-    const raw = document.getElementById('raw').value;
-    const skFile = document.getElementById('sk').files[0];
-    const siFile = document.getElementById('si').files[0];
+    async function executeEngine() {
+        const status = document.getElementById('status');
+        const tFile = document.getElementById('tpl').files[0];
+        const raw = document.getElementById('raw').value;
+        const skFile = document.getElementById('sk').files[0];
+        const siFile = document.getElementById('si').files[0];
 
-    if (!tFile || !raw) return alert("Upload template and paste data!");
+        if (!tFile || !raw) return alert("Missing Template or Data Block!");
 
-    try {
-        document.getElementById('status').innerText = "GENERATING_REPORT...";
-        
-        const template = await getBuf(tFile);
-        const skBuf = await getBuf(skFile);
-        const siBuf = await getBuf(siFile);
+        try {
+            status.innerText = "INITIALIZING_MODERN_ENGINE...";
+            status.style.color = "var(--blue)";
 
-        // FIX: Check kung nasaan ang createReport
-        // Minsan ito ay window.docxTemplates o window.docxTemplates.default
-        const createReport = window.docxTemplates.default || window.docxTemplates;
+            const tBuf = await getBuf(tFile);
+            const skBuf = await getBuf(skFile);
+            const siBuf = await getBuf(siFile);
 
-        const report = await createReport({
-            template,
-            data: {
-                last_name: extract(raw, "LAST NAME"),
-                first_name: extract(raw, "FIRST NAME"),
-                middle_name: extract(raw, "MIDDLE NAME"),
-                mobile: extract(raw, "MOBILE PHONE"),
-                email: extract(raw, "EMAIL ADDRESS"),
-                id_no: extract(raw, "ID TYPE/NO."),
-                house_no: extract(raw, "HOUSE/BLOCK/UNIT NO."),
-                street: extract(raw, "STREET"),
-                barangay: extract(raw, "BARANGAY"),
-                municipality: extract(raw, "MUNICIPALITY"),
-                date: "March 16, 2026",
-                // Image handling para sa docx-templates
-                sketch: skBuf ? { width: 12, height: 7, data: skBuf, extension: '.png' } : null,
-                signature: siBuf ? { width: 4, height: 2, data: siBuf, extension: '.png' } : null
-            },
-            cmdDelimiter: ['{', '}']
-        });
+            // UMD Access: Handle docx-templates structure
+            const createReport = window.docxTemplates.default || window.docxTemplates.createReport || window.docxTemplates;
 
-        saveAs(new Blob([report]), `SKYLINE_REPORT_${extract(raw, "LAST NAME")}.docx`);
-        document.getElementById('status').innerText = "SUCCESS: DOWNLOADED";
+            const report = await createReport({
+                template: tBuf,
+                data: {
+                    last_name: extract(raw, "LAST NAME"),
+                    first_name: extract(raw, "FIRST NAME"),
+                    middle_name: extract(raw, "MIDDLE NAME"),
+                    mobile: extract(raw, "MOBILE PHONE"),
+                    email: extract(raw, "EMAIL ADDRESS"),
+                    id_no: extract(raw, "ID TYPE/NO."),
+                    house_no: extract(raw, "HOUSE/BLOCK/UNIT NO."),
+                    street: extract(raw, "STREET"),
+                    barangay: extract(raw, "BARANGAY"),
+                    municipality: extract(raw, "MUNICIPALITY"),
+                    date: "March 16, 2026",
+                    // Use {IMAGE sketch} in Word 
+                    sketch: skBuf ? { width: 12, height: 7, data: skBuf, extension: '.png' } : null,
+                    // Use {IMAGE signature} in Word 
+                    signature: siBuf ? { width: 4, height: 2, data: siBuf, extension: '.png' } : null
+                },
+                cmdDelimiter: ['{', '}']
+            });
 
-    } catch (err) {
-        console.error("FULL ERROR:", err);
-        alert("Error: " + err.message);
+            const blob = new Blob([report], { type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' });
+            saveAs(blob, `SKYLINE_PRO_${extract(raw, "LAST NAME")}.docx`);
+
+            status.innerText = "SUCCESS: DOCUMENT_GENERATED";
+            status.style.color = "var(--neon)";
+
+        } catch (err) {
+            console.error(err);
+            status.innerText = "CRITICAL_ERROR: " + err.message;
+            status.style.color = "#ff4d4d";
+            alert("Engine Error: " + err.message);
+        }
     }
-}
 </script>
+
 </body>
 </html>
