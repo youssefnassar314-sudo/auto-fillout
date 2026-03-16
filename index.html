@@ -2,169 +2,112 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cheetah Pro | Magic Form Filler 🐆</title>
-    
+    <title>Cheetah Pro | Zero-Crash Edition 🐆</title>
     <script src="pizzip.min.js"></script>
     <script src="docxtemplater.js"></script>
     <script src="FileSaver.min.js"></script>
     <script src="docxtemplater-image-module-free.js"></script>
-    
     <style>
-        :root { --primary: #1a73e8; --success: #28a745; --bg: #f8f9fa; }
-        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: var(--bg); padding: 20px; color: #333; }
-        .container { max-width: 650px; margin: auto; background: white; padding: 25px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
-        h2 { color: var(--primary); border-bottom: 2px solid var(--primary); padding-bottom: 10px; margin-top: 0; }
-        .status-bar { padding: 12px; margin-bottom: 20px; border-radius: 8px; text-align: center; font-weight: bold; font-size: 14px; }
-        .loading { background: #fff3cd; color: #856404; }
+        body { font-family: sans-serif; padding: 20px; background: #f4f4f4; }
+        .card { max-width: 600px; margin: auto; background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        .status { padding: 10px; margin-bottom: 20px; border-radius: 6px; text-align: center; font-weight: bold; }
         .ready { background: #d4edda; color: #155724; }
-        .error { background: #f8d7da; color: #721c24; }
-        textarea { width: 100%; height: 180px; border-radius: 8px; border: 1px solid #ccc; padding: 12px; font-family: monospace; font-size: 13px; box-sizing: border-box; }
-        .input-group { margin: 15px 0; }
-        label { display: block; margin-bottom: 5px; font-weight: bold; color: #555; font-size: 13px; }
-        input[type="file"] { width: 100%; padding: 8px; background: #f1f3f4; border-radius: 6px; border: 1px solid #ddd; box-sizing: border-box; }
-        .btn { width: 100%; padding: 15px; background: var(--success); color: white; border: none; border-radius: 10px; cursor: pointer; font-size: 18px; font-weight: bold; transition: 0.2s; margin-top: 10px; }
-        .btn:hover { background: #218838; transform: translateY(-1px); }
-        .btn:disabled { background: #ccc; cursor: not-allowed; }
+        textarea { width: 100%; height: 150px; margin: 10px 0; border-radius: 5px; border: 1px solid #ccc; padding: 10px; }
+        input { display: block; margin-bottom: 10px; }
+        button { width: 100%; padding: 15px; background: #28a745; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; }
     </style>
 </head>
 <body>
 
-<div class="container">
+<div class="card">
     <h2>Cheetah Pro: Magic Fill 🐆</h2>
-    <div id="status" class="status-bar loading">Initializing System...</div>
+    <div id="status" class="status ready">SYSTEM READY | March 16, 2026</div>
 
-    <div class="input-group">
-        <label>1. Upload SKYLINE.docx Template</label>
-        <input type="file" id="tplFile" accept=".docx">
-    </div>
+    <label>1. Template (SKYLINE.docx)</label>
+    <input type="file" id="tpl">
 
-    <div class="input-group">
-        <label>2. Paste Client Data Block</label>
-        <textarea id="rawInput" placeholder="LAST NAME: GREGORIO..."></textarea>
-    </div>
+    <label>2. Data Block</label>
+    <textarea id="raw" placeholder="PASTE DATA HERE..."></textarea>
 
-    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-        <div class="input-group">
-            <label>3. Sketch (JPEG)</label>
-            <input type="file" id="sketchFile" accept="image/jpeg">
-        </div>
-        <div class="input-group">
-            <label>4. Signature (PNG)</label>
-            <input type="file" id="sigFile" accept="image/png">
-        </div>
-    </div>
+    <label>3. Images (Optional)</label>
+    <input type="file" id="sk" accept="image/jpeg">
+    <input type="file" id="si" accept="image/png">
 
-    <button id="genBtn" class="btn" onclick="generateDocument()" disabled>Download Completed Word</button>
+    <button onclick="generate()">Generate & Download</button>
 </div>
 
 <script>
-    const statusDiv = document.getElementById('status');
-    const genBtn = document.getElementById('genBtn');
+    // 1x1 Transparent Pixel para iwas "reading '0'" error kung walang in-upload na image
+    const transparentPixel = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=";
 
-    // 1. Library Health Check
-    window.onload = function() {
-        const isReady = window.PizZip && window.docxtemplater && (window.ImageModule || window.DocxtemplaterImageModule);
-        if (isReady) {
-            statusDiv.innerHTML = "✅ SYSTEM READY | March 16, 2026";
-            statusDiv.className = "status-bar ready";
-            genBtn.disabled = false;
-        } else {
-            statusDiv.innerHTML = "❌ ERROR: One or more scripts are missing or corrupted.";
-            statusDiv.className = "status-bar error";
-        }
-    };
-
-    // 2. Helper to read files as ArrayBuffer
-    const getFileBuffer = (file) => new Promise((resolve) => {
-        if (!file) return resolve(null);
-        const reader = new FileReader();
-        reader.onload = (e) => resolve(e.target.result);
-        reader.readAsArrayBuffer(file);
+    const getBuf = (f) => new Promise((res) => {
+        if (!f) return res(null);
+        const r = new FileReader();
+        r.onload = (e) => res(e.target.result);
+        r.readAsArrayBuffer(f);
     });
 
-    // 3. Extraction Logic (The "Magic Paste")
-    function extractData(text, label) {
+    function extract(text, label) {
         const regex = new RegExp(label + "\\s*:\\s*(.*)", "i");
         const match = text.match(regex);
         return match ? match[1].trim() : "";
     }
 
-    // 4. The Main Generation Function
-async function generateDocument() {
-    const template = document.getElementById('tplFile').files[0];
-    const rawText = document.getElementById('rawInput').value;
-    const sketch = document.getElementById('sketchFile').files[0];
-    const signature = document.getElementById('sigFile').files[0];
+    async function generate() {
+        try {
+            const tFile = document.getElementById('tpl').files[0];
+            const rawT = document.getElementById('raw').value;
+            const skFile = document.getElementById('sk').files[0];
+            const siFile = document.getElementById('si').files[0];
 
-    if (!template || !rawText) return alert("Kulang ang template o data!");
+            if (!tFile) return alert("Paki-upload ang template!");
 
-    try {
-        document.getElementById('status').innerText = "⚙️ Processing... March 16, 2026";
-        
-        const [tBuf, skBuf, siBuf] = await Promise.all([
-            getFileBuffer(template),
-            getFileBuffer(sketch),
-            getFileBuffer(signature)
-        ]);
+            const [tBuf, skBuf, siBuf] = await Promise.all([getBuf(tFile), getBuf(skFile), getBuf(siBuf)]);
+            const zip = new PizZip(tBuf);
 
-        const zip = new PizZip(tBuf);
-        const ImgConstructor = window.ImageModule || window.DocxtemplaterImageModule;
+            const ImgConstructor = window.ImageModule || window.DocxtemplaterImageModule;
+            
+            const doc = new docxtemplater(zip, {
+                modules: [new ImgConstructor({
+                    centered: false,
+                    getImage: function(tagValue) {
+                        // FALLBACK: Kung walang buffer, ibigay ang transparent pixel
+                        return tagValue ? tagValue : transparentPixel;
+                    },
+                    getSize: function(img, tagValue, tagName) {
+                        if (tagName === "sketch") return [350, 220];
+                        if (tagName === "signature") return [150, 75];
+                        return [10, 10];
+                    }
+                })],
+                paragraphLoop: true,
+                linebreaks: true
+            });
 
-        const imgOptions = {
-            centered: false,
-            getImage: (tagValue) => tagValue,
-            getSize: (img, tagValue, tagName) => {
-                if (!tagValue) return [0, 0]; // Safety check para sa missing images
-                if (tagName === "sketch") return [350, 220];
-                if (tagName === "signature") return [160, 80];
-                return [100, 100];
-            }
-        };
+            doc.render({
+                date: "March 16, 2026",
+                last_name: extract(rawT, "LAST NAME"),
+                first_name: extract(rawT, "FIRST NAME"),
+                middle_name: extract(rawT, "MIDDLE NAME"),
+                mobile: extract(rawT, "MOBILE PHONE"),
+                email: extract(rawT, "EMAIL ADDRESS"),
+                id_no: extract(rawT, "ID TYPE/NO."),
+                house_no: extract(rawT, "HOUSE/BLOCK/UNIT NO."),
+                street: extract(rawT, "STREET"),
+                barangay: extract(rawT, "BARANGAY"),
+                municipality: extract(rawT, "MUNICIPALITY"),
+                sketch: skBuf, // Pwedeng null, handled na ng getImage
+                signature: siBuf
+            });
 
-        const doc = new docxtemplater(zip, {
-            modules: [new ImgConstructor(imgOptions)],
-            paragraphLoop: true,
-            linebreaks: true
-        });
-
-        doc.render({
-            date: "March 16, 2026",
-            last_name: extractData(rawText, "LAST NAME"),
-            first_name: extractData(rawText, "FIRST NAME"),
-            middle_name: extractData(rawText, "MIDDLE NAME"),
-            mobile: extractData(rawText, "MOBILE PHONE"),
-            email: extractData(rawText, "EMAIL ADDRESS"),
-            id_no: extractData(rawText, "ID TYPE/NO."),
-            birthdate: extractData(rawText, "BIRTHDATE"), // New
-            age: extractData(rawText, "AGE"), // New
-            sex: extractData(rawText, "SEX"), // New
-            civil_status: extractData(rawText, "CIVIL STATUS"), // New
-            spouse_name: extractData(rawText, "SPOUSE NAME"), // New
-            house_no: extractData(rawText, "HOUSE/BLOCK/UNIT NO."),
-            street: extractData(rawText, "STREET"),
-            barangay: extractData(rawText, "BARANGAY"),
-            municipality: extractData(rawText, "MUNICIPALITY"),
-            sketch: skBuf,
-            signature: siBuf
-        });
-
-        const out = doc.getZip().generate({ type: "blob" });
-        saveAs(out, `Application_${extractData(rawText, "LAST NAME")}.docx`);
-        document.getElementById('status').innerText = "✅ Success!";
-        
-    } catch (error) {
-        console.error(error);
-        // Ipakita ang eksaktong tag na may error
-        let errorMsg = error.message;
-        if (error.properties && error.properties.errors) {
-            errorMsg = error.properties.errors.map(e => e.properties.explanation).join("\n");
+            const out = doc.getZip().generate({ type: "blob" });
+            saveAs(out, `Cheetah_App_${extract(rawT, "LAST NAME") || 'Client'}.docx`);
+            
+        } catch (e) {
+            console.error(e);
+            alert("ERROR: " + e.message);
         }
-        alert("SABLAY: " + errorMsg);
-        document.getElementById('status').innerText = "❌ FAILED: Check Console.";
     }
-}
 </script>
-
 </body>
 </html>
