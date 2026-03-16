@@ -33,7 +33,7 @@
     <input type="file" id="sk" accept="image/jpeg">
     <input type="file" id="si" accept="image/png">
 
-    <button onclick="generate()">Generate & Download</button>
+    <button onclick="generateDocument()">Generate & Download</button>
 </div>
 
 <script>
@@ -54,83 +54,84 @@
     }
 
     async function generateDocument() {
-    // 1. Kunin muna ang lahat ng inputs mula sa UI
-    const template = document.getElementById('tplFile').files[0];
-    const rawText = document.getElementById('rawInput').value;
-    const sketch = document.getElementById('sketchFile').files[0];
-    const signature = document.getElementById('sigFile').files[0];
+        // 1. Inayos ang mga IDs para mag-match sa HTML
+        const template = document.getElementById('tpl').files[0];
+        const rawText = document.getElementById('raw').value;
+        const sketch = document.getElementById('sk').files[0];
+        const signature = document.getElementById('si').files[0];
 
-    // 2. Early Exit: Kung walang template o data, huwag nang ituloy
-    if (!template || !rawText) {
-        return alert("Kulang ang inputs! Paki-upload ang template at i-paste ang client data.");
+        // 2. Early Exit: Kung walang template o data, huwag nang ituloy
+        if (!template || !rawText) {
+            return alert("Kulang ang inputs! Paki-upload ang template at i-paste ang client data.");
+        }
+
+        try {
+            document.getElementById('status').innerText = "⚙️ Initializing Buffers... March 16, 2026";
+
+            // 3. Inayos ang function call from getFileBuffer to getBuf
+            const tBuf = await getBuf(template);
+            const skBuf = await getBuf(sketch);
+            const siBuf = await getBuf(signature);
+
+            // 4. Setup PizZip at Image Module
+            const zip = new PizZip(tBuf);
+            const ImgConstructor = window.ImageModule || window.DocxtemplaterImageModule;
+
+            const imgOptions = {
+                centered: false,
+                // Fallback sa transparent pixel kung walang in-upload na image
+                getImage: (tagValue) => tagValue ? tagValue : transparentPixel,
+                getSize: (img, tagValue, tagName) => {
+                    if (tagName === "sketch") return [350, 220];
+                    if (tagName === "signature") return [160, 80];
+                    return [10, 10];
+                }
+            };
+
+            // 5. Initialize Docxtemplater
+            const doc = new docxtemplater(zip, {
+                modules: [new ImgConstructor(imgOptions)],
+                paragraphLoop: true,
+                linebreaks: true
+            });
+
+            // 6. Data Mapping: Inayos mula extractData() papuntang extract()
+            doc.render({
+                date: "March 16, 2026",
+                last_name: extract(rawText, "LAST NAME"),
+                first_name: extract(rawText, "FIRST NAME"),
+                middle_name: extract(rawText, "MIDDLE NAME"),
+                mobile: extract(rawText, "MOBILE PHONE"),
+                email: extract(rawText, "EMAIL ADDRESS"),
+                id_no: extract(rawText, "ID TYPE/NO."),
+                house_no: extract(rawText, "HOUSE/BLOCK/UNIT NO."),
+                street: extract(rawText, "STREET"),
+                barangay: extract(rawText, "BARANGAY"),
+                municipality: extract(rawText, "MUNICIPALITY"),
+                sketch: skBuf,
+                signature: siBuf
+            });
+
+            // 7. Generation at Download
+            const out = doc.getZip().generate({ 
+                type: "blob",
+                mimeType: "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+            });
+
+            const clientName = extract(rawText, "LAST NAME") || "New_Client";
+            saveAs(out, `SKYLINE_Application_${clientName}.docx`);
+            
+            document.getElementById('status').innerText = "✅ SUCCESS: File Ready!";
+            document.getElementById('status').className = "status ready";
+
+        } catch (error) {
+            console.error("DEBUG ERROR:", error);
+            alert("SABLAY: " + error.message);
+            document.getElementById('status').innerText = "❌ ERROR: " + error.message;
+            document.getElementById('status').style.background = "#f8d7da";
+            document.getElementById('status').style.color = "#721c24";
+        }
     }
-
-    try {
-        document.getElementById('status').innerText = "⚙️ Initializing Buffers... March 16, 2026";
-
-        // 3. Sequential Await: Mas safe ito para iwas initialization errors kaysa sa Promise.all
-        // Binabasa natin ang files isa-isa para siguradong initialized na sila
-        const tBuf = await getFileBuffer(template);
-        const skBuf = await getFileBuffer(sketch);
-        const siBuf = await getFileBuffer(signature);
-
-        // 4. Setup PizZip at Image Module
-        const zip = new PizZip(tBuf);
-        const ImgConstructor = window.ImageModule || window.DocxtemplaterImageModule;
-
-        const imgOptions = {
-            centered: false,
-            // Fallback sa transparent pixel kung walang in-upload na image
-            getImage: (tagValue) => tagValue ? tagValue : transparentPixel,
-            getSize: (img, tagValue, tagName) => {
-                if (tagName === "sketch") return [350, 220];
-                if (tagName === "signature") return [160, 80];
-                return [10, 10];
-            }
-        };
-
-        // 5. Initialize Docxtemplater
-        const doc = new docxtemplater(zip, {
-            modules: [new ImgConstructor(imgOptions)],
-            paragraphLoop: true,
-            linebreaks: true
-        });
-
-        // 6. Data Mapping (March 16, 2026)
-        doc.render({
-            date: "March 16, 2026",
-            last_name: extractData(rawText, "LAST NAME"),
-            first_name: extractData(rawText, "FIRST NAME"),
-            middle_name: extractData(rawText, "MIDDLE NAME"),
-            mobile: extractData(rawText, "MOBILE PHONE"),
-            email: extractData(rawText, "EMAIL ADDRESS"),
-            id_no: extractData(rawText, "ID TYPE/NO."),
-            house_no: extractData(rawText, "HOUSE/BLOCK/UNIT NO."),
-            street: extractData(rawText, "STREET"),
-            barangay: extractData(rawText, "BARANGAY"),
-            municipality: extractData(rawText, "MUNICIPALITY"),
-            // Siguradong initialized na ang mga ito dito:
-            sketch: skBuf,
-            signature: siBuf
-        });
-
-        // 7. Generation at Download
-        const out = doc.getZip().generate({ 
-            type: "blob",
-            mimeType: "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-        });
-
-        const clientName = extractData(rawText, "LAST NAME") || "New_Client";
-        saveAs(out, `SKYLINE_Application_${clientName}.docx`);
-        
-        document.getElementById('status').innerText = "✅ SUCCESS: File Ready!";
-
-    } catch (error) {
-        console.error("DEBUG ERROR:", error);
-        alert("SABLAY: " + error.message);
-        document.getElementById('status').innerText = "❌ ERROR: " + error.message;
-    }
-}
 </script>
 </body>
 </html>
