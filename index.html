@@ -2,65 +2,61 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cheetah Pro | Online Form Filler</title>
+    <title>Cheetah Pro | Final Online Version 🐆</title>
     
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/pizzip/3.1.4/pizzip.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/docxtemplater/3.37.2/docxtemplater.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/docxtemplater-image-module-free@1.1.1/build/docxtemplater-image-module-free.js"></script>
+    <script src="pizzip.min.js"></script>
+    <script src="docxtemplater.js"></script>
+    <script src="FileSaver.min.js"></script>
+    <script src="docxtemplater-image-module-free.js"></script>
     
     <style>
-        body { font-family: 'Segoe UI', sans-serif; background: #f0f2f5; padding: 20px; }
-        .card { max-width: 600px; margin: auto; background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        body { font-family: 'Segoe UI', sans-serif; background: #f4f7f6; padding: 20px; }
+        .container { max-width: 650px; margin: auto; background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        h2 { color: #1a73e8; border-bottom: 2px solid #1a73e8; padding-bottom: 10px; margin-top: 0; }
         .status { padding: 10px; margin-bottom: 20px; border-radius: 6px; text-align: center; font-weight: bold; font-size: 13px; }
-        .ready { background: #d4edda; color: #155724; }
+        .ok { background: #d4edda; color: #155724; }
         .error { background: #f8d7da; color: #721c24; }
         textarea { width: 100%; height: 150px; border-radius: 8px; border: 1px solid #ccc; padding: 12px; font-family: monospace; }
-        .btn { width: 100%; padding: 15px; background: #1a73e8; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 16px; font-weight: bold; margin-top: 15px; }
-        .btn:disabled { background: #ccc; }
+        .btn { width: 100%; padding: 15px; background: #28a745; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 16px; font-weight: bold; margin-top: 20px; }
     </style>
 </head>
 <body>
 
-<div class="card">
-    <h2 style="margin-top:0; color:#1a73e8;">Cheetah Agent Pro: Magic Fill 🐆</h2>
-    <div id="status" class="status">Checking Libraries...</div>
+<div class="container">
+    <h2>Cheetah Pro: Online 🐆</h2>
+    <div id="status" class="status">Checking System...</div>
 
     <label><b>1. Template (SKYLINE.docx)</b></label>
     <input type="file" id="tpl" style="display:block; margin: 10px 0 20px 0;">
 
-    <label><b>2. Paste Client Text Block</b></label>
-    <textarea id="raw" placeholder="LAST NAME: "></textarea>
+    <label><b>2. Paste Client Data</b></label>
+    <textarea id="raw" placeholder="LAST NAME: GREGORIO..."></textarea>
 
     <div style="display:flex; gap:10px; margin-top:15px;">
-        <div style="flex:1;">
-            <label><b>Sketch (JPG)</b></label>
-            <input type="file" id="sk" accept="image/jpeg" style="width:100%;">
-        </div>
-        <div style="flex:1;">
-            <label><b>Signature (PNG)</b></label>
-            <input type="file" id="si" accept="image/png" style="width:100%;">
-        </div>
+        <div style="flex:1;"><label><b>Sketch (JPG)</b></label><input type="file" id="sk" accept="image/jpeg"></div>
+        <div style="flex:1;"><label><b>Signature (PNG)</b></label><input type="file" id="si" accept="image/png"></div>
     </div>
 
-    <button id="btn" class="btn" onclick="generate()" disabled>Generate & Download</button>
+    <button id="genBtn" class="btn" onclick="generate()" disabled>Generate Application Form</button>
 </div>
 
 <script>
-    // Diagnostic check for GitHub Pages
-    const check = setInterval(() => {
-        const isReady = window.PizZip && window.docxtemplater && (window.ImageModule || window.DocxtemplaterImageModule);
-        if (isReady) {
-            document.getElementById('status').innerText = "✅ System Ready | March 16, 2026";
-            document.getElementById('status').className = "status ready";
-            document.getElementById('btn').disabled = false;
-            clearInterval(check);
+    // Diagnostic check for GitHub local files
+    window.onload = function() {
+        const s = document.getElementById('status');
+        const b = document.getElementById('genBtn');
+        // Check kung loaded ang Image Module (it can be ImageModule or DocxtemplaterImageModule)
+        const imgReady = window.ImageModule || window.DocxtemplaterImageModule;
+        
+        if (window.PizZip && window.docxtemplater && imgReady) {
+            s.innerText = "✅ SYSTEM READY: March 16, 2026";
+            s.className = "status ok";
+            b.disabled = false;
         } else {
-            document.getElementById('status').innerText = "❌ Loading Libraries... (Check Console)";
-            document.getElementById('status').className = "status error";
+            s.innerText = "❌ ERROR: One or more scripts are missing in your folder.";
+            s.className = "status error";
         }
-    }, 1000);
+    };
 
     const getBuf = (f) => new Promise((res) => {
         if (!f) return res(null);
@@ -76,22 +72,19 @@
     }
 
     async function generate() {
-        const tFile = document.getElementById('tpl').files[0];
-        const rawT = document.getElementById('raw').value;
-        const skFile = document.getElementById('sk').files[0];
-        const siFile = document.getElementById('si').files[0];
-
-        if (!tFile || !rawT) return alert("Kulang ng template o data!");
-
         try {
+            const tFile = document.getElementById('tpl').files[0];
+            const rawT = document.getElementById('raw').value;
+            const skFile = document.getElementById('sk').files[0];
+            const siFile = document.getElementById('si').files[0];
+
             const [tBuf, skBuf, siBuf] = await Promise.all([getBuf(tFile), getBuf(skFile), getBuf(siBuf)]);
             const zip = new PizZip(tBuf);
 
-            // FIX PARA SA IMAGE MODULE CONSTRUCTOR SA GITHUB/CDN
-            const ImgModule = window.ImageModule || window.DocxtemplaterImageModule;
+            const ImgConstructor = window.ImageModule || window.DocxtemplaterImageModule;
             
             const doc = new docxtemplater(zip, {
-                modules: [new ImgModule({
+                modules: [new ImgConstructor({
                     centered: false,
                     getImage: (v) => v,
                     getSize: (img, v, name) => {
@@ -105,7 +98,7 @@
             });
 
             doc.render({
-                date: "March 16, 2026",
+                date: "March 16, 2026", // Automatic current date
                 last_name: extract(rawT, "LAST NAME"),
                 first_name: extract(rawT, "FIRST NAME"),
                 middle_name: extract(rawT, "MIDDLE NAME"),
@@ -122,9 +115,7 @@
 
             const out = doc.getZip().generate({ type: "blob" });
             saveAs(out, `Application_${extract(rawT, "LAST NAME")}.docx`);
-            alert("Success!");
         } catch (e) {
-            console.error(e);
             alert("Error: " + e.message);
         }
     }
