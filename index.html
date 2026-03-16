@@ -95,7 +95,7 @@ const templateBuf=await template.arrayBuffer();
 const sketchBuf=await getImageBuffer(sketch);
 const signatureBuf=await getImageBuffer(signature);
 
-const report=await window.createReport({
+const report=await docxTemplates.createReport({
 
 template:templateBuf,
 
