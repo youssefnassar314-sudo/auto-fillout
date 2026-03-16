@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>CHEETAH PRO 2026 | RELIABLE ENGINE</title>
+    <title>CHEETAH PRO | FULL RECOVERY 🐆</title>
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/docxtemplater/3.45.0/docxtemplater.js"></script>
     <script src="https://unpkg.com/pizzip@3.1.6/dist/pizzip.js"></script>
@@ -12,42 +12,46 @@
     <style>
         :root { --neon: #00ff9d; --bg: #0a0a0c; }
         body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: #eee; display: flex; justify-content: center; padding: 20px; }
-        .container { width: 100%; max-width: 600px; background: #141417; padding: 35px; border-radius: 15px; border: 1px solid #2a2a30; box-shadow: 0 20px 50px rgba(0,0,0,0.5); }
+        .container { width: 100%; max-width: 650px; background: #141417; padding: 35px; border-radius: 15px; border: 1px solid #2a2a30; box-shadow: 0 20px 50px rgba(0,0,0,0.5); }
         .status-bar { background: rgba(0, 255, 157, 0.05); border: 1px solid rgba(0, 255, 157, 0.2); padding: 12px; border-radius: 8px; font-family: monospace; font-size: 0.8rem; margin-bottom: 25px; color: var(--neon); }
-        textarea { width: 100%; height: 140px; background: #000; border: 1px solid #333; color: #00ff00; padding: 15px; border-radius: 8px; font-family: 'Courier New', monospace; box-sizing: border-box; }
+        textarea { width: 100%; height: 160px; background: #000; border: 1px solid #333; color: #00ff00; padding: 15px; border-radius: 8px; font-family: 'Courier New', monospace; box-sizing: border-box; outline: none; }
         .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin: 20px 0; }
-        button { width: 100%; padding: 18px; background: var(--neon); color: #000; border: none; border-radius: 10px; font-weight: 900; cursor: pointer; text-transform: uppercase; transition: 0.3s; }
-        button:hover { box-shadow: 0 0 20px rgba(0, 255, 157, 0.4); transform: translateY(-2px); }
-        label { display: block; margin-bottom: 5px; font-size: 0.75rem; color: #888; font-weight: bold; }
+        button { width: 100%; padding: 20px; background: var(--neon); color: #000; border: none; border-radius: 10px; font-weight: 900; cursor: pointer; text-transform: uppercase; transition: 0.3s; }
+        button:hover { box-shadow: 0 0 25px rgba(0, 255, 157, 0.5); transform: translateY(-2px); }
+        label { display: block; margin-bottom: 8px; font-size: 0.75rem; color: #888; font-weight: bold; text-transform: uppercase; }
+        input[type="file"] { font-size: 0.8rem; color: #666; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h2 style="color: var(--neon); margin-top: 0;">CHEETAH PRO 🐆</h2>
-    <div id="status" class="status-bar">SYSTEM_READY | MARCH 16, 2026</div>
+    <h2 style="color: var(--neon); margin: 0 0 10px 0;">CHEETAH PRO OS 🐆</h2>
+    <div id="status" class="status-bar">SYSTEM_ONLINE // MARCH 16, 2026</div>
 
-    <label>1. TEMPLATE (SKYLINE - Copy.docx)</label>
-    <input type="file" id="tpl" style="margin-bottom: 20px;">
+    <label>1. Application Template (SKYLINE.docx)</label>
+    <input type="file" id="tpl" style="margin-bottom: 25px;">
 
-    <label>2. CLIENT DATA BLOCK</label>
-    <textarea id="raw" placeholder="PASTE DATA HERE..."></textarea>
+    <label>2. Paste Client Data Block</label>
+    <textarea id="raw" placeholder="PASTE DATA HERE... (e.g. LAST NAME: Cruz)"></textarea>
 
     <div class="grid">
-        <div>
-            <label>LOCATION SKETCH</label>
+        <div style="background: #1c1c21; padding: 10px; border-radius: 8px;">
+            <label>Location Sketch</label>
             <input type="file" id="sk">
         </div>
-        <div>
-            <label>SIGNATURE</label>
+        <div style="background: #1c1c21; padding: 10px; border-radius: 8px;">
+            <label>Signature</label>
             <input type="file" id="si">
         </div>
     </div>
 
-    <button onclick="runExecution()">Generate Document</button>
+    <button onclick="runCheetahEngine()">Execute & Download DOCX</button>
 </div>
 
 <script>
+    // --- CORE FUNCTIONS ---
+    
+    // Convert file to ArrayBuffer
     const getBuf = (f) => new Promise((res) => {
         if (!f) return res(null);
         const r = new FileReader();
@@ -55,31 +59,33 @@
         r.readAsArrayBuffer(f);
     });
 
+    // Extract data from the pasted block
     function extract(text, label) {
         const regex = new RegExp(label + "\\s*:\\s*(.*)", "i");
         const match = text.match(regex);
         return match ? match[1].trim() : "---";
     }
 
-    async function runExecution() {
+    async function runCheetahEngine() {
         const status = document.getElementById('status');
         const tFile = document.getElementById('tpl').files[0];
-        const raw = document.getElementById('raw').value;
+        const rawText = document.getElementById('raw').value;
         const skFile = document.getElementById('sk').files[0];
         const siFile = document.getElementById('si').files[0];
 
-        if (!tFile || !raw) return alert("Paki-upload ang template at i-paste ang data!");
+        if (!tFile || !rawText) return alert("Missing Template or Client Data!");
 
         try {
-            status.innerText = "⚙️ INITIALIZING_RELIABLE_ENGINE...";
-            
+            status.innerText = "PROCESSING_RECOVERY_ENGINE...";
+            status.style.color = "#00d4ff";
+
             const tBuf = await getBuf(tFile);
             const skBuf = await getBuf(skFile);
             const siBuf = await getBuf(siFile);
 
             const zip = new PizZip(tBuf);
 
-            // Gagamit tayo ng CUSTOM DELIMITERS '+++' para sa template mo
+            // Image Module Setup
             const imgOptions = {
                 centered: false,
                 getImage: (tagValue) => tagValue,
@@ -90,28 +96,30 @@
                 }
             };
 
-            // Sigurado tayong window.docxtemplater ang tawag dito
+            // Initialize Docxtemplater with Image Module and Custom Delimiters
             const doc = new window.docxtemplater(zip, {
                 modules: [new window.ImageModule(imgOptions)],
-                delimiters: { start: '+++', end: '+++' }, // Para sa +++sketch+++ tags mo
+                delimiters: { start: '+++', end: '+++' },
                 paragraphLoop: true,
                 linebreaks: true
             });
 
+            // Mapping all data points from your template
             doc.render({
-                last_name: extract(raw, "LAST NAME"),
-                first_name: extract(raw, "FIRST NAME"),
-                middle_name: extract(raw, "MIDDLE NAME"),
-                mobile: extract(raw, "MOBILE PHONE"),
-                email: extract(raw, "EMAIL ADDRESS"),
-                id_no: extract(raw, "ID TYPE/NO."),
-                house_no: extract(raw, "HOUSE/BLOCK/UNIT NO."),
-                street: extract(raw, "STREET"),
-                barangay: extract(raw, "BARANGAY"),
-                municipality: extract(raw, "MUNICIPALITY"),
                 date: "March 16, 2026",
-                sketch: skBuf,      // Magiging +++sketch+++
-                signature: siBuf    // Magiging +++signature+++
+                last_name: extract(rawText, "LAST NAME"),
+                first_name: extract(rawText, "FIRST NAME"),
+                middle_name: extract(rawText, "MIDDLE NAME"),
+                mobile: extract(rawText, "MOBILE PHONE"),
+                email: extract(rawText, "EMAIL ADDRESS"),
+                id_no: extract(rawText, "ID TYPE/NO."),
+                house_no: extract(rawText, "HOUSE/BLOCK/UNIT NO."),
+                street: extract(rawText, "STREET"),
+                barangay: extract(rawText, "BARANGAY"),
+                municipality: extract(rawText, "MUNICIPALITY"),
+                // Images map to +++sketch+++ and +++signature+++
+                sketch: skBuf,
+                signature: siBuf
             });
 
             const out = doc.getZip().generate({ 
@@ -119,15 +127,20 @@
                 mimeType: "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
             });
 
-            saveAs(out, `SKYLINE_APP_${extract(raw, "LAST NAME")}.docx`);
-            status.innerText = "✅ SUCCESS: FILE_DOWNLOADED";
+            const clientName = extract(rawText, "LAST NAME") || "NewClient";
+            saveAs(out, `SKYLINE_RECOVERY_${clientName}.docx`);
+
+            status.innerText = "✅ SUCCESS: DOCUMENT_GENERATED";
+            status.style.color = "var(--neon)";
 
         } catch (err) {
             console.error(err);
-            status.innerText = "❌ ERROR: " + err.message;
-            alert("Error: " + err.message);
+            status.innerText = "❌ CRITICAL_ERROR: " + err.message;
+            status.style.color = "#ff4d4d";
+            alert("Engine Error: " + err.message);
         }
     }
 </script>
+
 </body>
 </html>
