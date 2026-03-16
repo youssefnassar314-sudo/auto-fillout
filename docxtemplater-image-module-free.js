@@ -1408,4 +1408,4 @@ module.exports = {
   XTAPIVersionError: XTAPIVersionError,
   RenderingError: RenderingError,
   getClosingTagNotMatchOpeningTag: getClosingTagNotMatchOpeningTag,
-  
+}
