@@ -59,39 +59,53 @@
     }
 
     async function buildReport() {
-        const tFile = document.getElementById('tpl').files[0];
-        const raw = document.getElementById('raw').value;
-        const skBuf = await getBuf(document.getElementById('sk').files[0]);
-        const siBuf = await getBuf(document.getElementById('si').files[0]);
+    const tFile = document.getElementById('tpl').files[0];
+    const raw = document.getElementById('raw').value;
+    const skFile = document.getElementById('sk').files[0];
+    const siFile = document.getElementById('si').files[0];
 
-        if (!tFile || !raw) return alert("Upload template and paste data!");
+    if (!tFile || !raw) return alert("Upload template and paste data!");
 
-        try {
-            const template = await getBuf(tFile);
+    try {
+        document.getElementById('status').innerText = "GENERATING_REPORT...";
+        
+        const template = await getBuf(tFile);
+        const skBuf = await getBuf(skFile);
+        const siBuf = await getBuf(siFile);
 
-            // Gagamit tayo ng createReport mula sa library
-            const report = await window.docxTemplates.createReport({
-                template,
-                data: {
-                    last_name: extract(raw, "LAST NAME"),
-                    first_name: extract(raw, "FIRST NAME"),
-                    mobile: extract(raw, "MOBILE PHONE"),
-                    email: extract(raw, "EMAIL ADDRESS"),
-                    date: "March 16, 2026",
-                    // Image Handling: Dito mo na iseset ang size!
-                    sketch: skBuf ? { width: 12, height: 7, data: skBuf, extension: '.png' } : null,
-                    signature: siBuf ? { width: 4, height: 2, data: siBuf, extension: '.png' } : null
-                },
-                // Ito ang delimiters para sa module na ito
-                cmdDelimiter: ['{', '}']
-            });
+        // FIX: Check kung nasaan ang createReport
+        // Minsan ito ay window.docxTemplates o window.docxTemplates.default
+        const createReport = window.docxTemplates.default || window.docxTemplates;
 
-            saveAs(new Blob([report]), `SKYLINE_REPORT_${extract(raw, "LAST NAME")}.docx`);
-        } catch (err) {
-            console.error(err);
-            alert("Error: " + err.message);
-        }
+        const report = await createReport({
+            template,
+            data: {
+                last_name: extract(raw, "LAST NAME"),
+                first_name: extract(raw, "FIRST NAME"),
+                middle_name: extract(raw, "MIDDLE NAME"),
+                mobile: extract(raw, "MOBILE PHONE"),
+                email: extract(raw, "EMAIL ADDRESS"),
+                id_no: extract(raw, "ID TYPE/NO."),
+                house_no: extract(raw, "HOUSE/BLOCK/UNIT NO."),
+                street: extract(raw, "STREET"),
+                barangay: extract(raw, "BARANGAY"),
+                municipality: extract(raw, "MUNICIPALITY"),
+                date: "March 16, 2026",
+                // Image handling para sa docx-templates
+                sketch: skBuf ? { width: 12, height: 7, data: skBuf, extension: '.png' } : null,
+                signature: siBuf ? { width: 4, height: 2, data: siBuf, extension: '.png' } : null
+            },
+            cmdDelimiter: ['{', '}']
+        });
+
+        saveAs(new Blob([report]), `SKYLINE_REPORT_${extract(raw, "LAST NAME")}.docx`);
+        document.getElementById('status').innerText = "SUCCESS: DOWNLOADED";
+
+    } catch (err) {
+        console.error("FULL ERROR:", err);
+        alert("Error: " + err.message);
     }
+}
 </script>
 </body>
 </html>
