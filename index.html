@@ -2,65 +2,19 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Cheetah Pro | Zero Crash 🐆</title>
+<title>Cheetah Pro | Stable Edition 🐆</title>
 
-<script src="pizzip.min.js"></script>
-<script src="docxtemplater.js"></script>
-<script src="FileSaver.min.js"></script>
-<script src="docxtemplater-image-module-free.js"></script>
+<script src="https://unpkg.com/docx-templates/lib/browser.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
 
 <style>
-
-body{
-font-family:sans-serif;
-background:#f4f4f4;
-padding:20px;
-}
-
-.card{
-max-width:600px;
-margin:auto;
-background:white;
-padding:25px;
-border-radius:12px;
-box-shadow:0 4px 10px rgba(0,0,0,0.1);
-}
-
-.status{
-padding:10px;
-margin-bottom:20px;
-border-radius:6px;
-text-align:center;
-font-weight:bold;
-background:#d4edda;
-color:#155724;
-}
-
-textarea{
-width:100%;
-height:150px;
-margin:10px 0;
-border-radius:6px;
-border:1px solid #ccc;
-padding:10px;
-}
-
-input{
-display:block;
-margin-bottom:10px;
-}
-
-button{
-width:100%;
-padding:15px;
-background:#28a745;
-color:white;
-border:none;
-border-radius:8px;
-font-weight:bold;
-cursor:pointer;
-}
-
+body { font-family: sans-serif; padding: 20px; background: #f4f4f4; }
+.card { max-width: 600px; margin: auto; background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+.status { padding: 10px; margin-bottom: 20px; border-radius: 6px; text-align: center; font-weight: bold; }
+.ready { background: #d4edda; color: #155724; }
+textarea { width: 100%; height: 150px; margin: 10px 0; border-radius: 5px; border: 1px solid #ccc; padding: 10px; }
+input { display: block; margin-bottom: 10px; }
+button { width: 100%; padding: 15px; background: #28a745; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; }
 </style>
 </head>
 
@@ -70,23 +24,21 @@ cursor:pointer;
 
 <h2>Cheetah Pro: Magic Fill 🐆</h2>
 
-<div id="status" class="status">
-SYSTEM READY
+<div id="status" class="status ready">
+SYSTEM READY | March 16, 2026
 </div>
 
-<label>Template (.docx)</label>
+<label>1. Template (SKYLINE.docx)</label>
 <input type="file" id="tpl">
 
-<label>Client Data</label>
-<textarea id="raw" placeholder="PASTE CLIENT DATA"></textarea>
+<label>2. Data Block</label>
+<textarea id="raw" placeholder="PASTE DATA HERE..."></textarea>
 
-<label>Sketch Image</label>
+<label>3. Images</label>
 <input type="file" id="sk" accept="image/png,image/jpeg">
-
-<label>Signature Image</label>
 <input type="file" id="si" accept="image/png,image/jpeg">
 
-<button onclick="generateDocument()">Generate Document</button>
+<button onclick="generateDocument()">Generate & Download</button>
 
 </div>
 
@@ -102,9 +54,9 @@ return match?match[1].trim():"";
 
 }
 
-function getBuffer(file){
+function getImageBuffer(file){
 
-return new Promise((resolve,reject)=>{
+return new Promise((resolve)=>{
 
 if(!file){
 resolve(null);
@@ -113,9 +65,7 @@ return;
 
 const reader=new FileReader();
 
-reader.onload=e=>resolve(e.target.result);
-
-reader.onerror=err=>reject(err);
+reader.onload=(e)=>resolve(e.target.result);
 
 reader.readAsArrayBuffer(file);
 
@@ -125,69 +75,31 @@ reader.readAsArrayBuffer(file);
 
 async function generateDocument(){
 
-try{
-
 const template=document.getElementById("tpl").files[0];
-
 const rawText=document.getElementById("raw").value;
+const sketch=document.getElementById("sk").files[0];
+const signature=document.getElementById("si").files[0];
 
-const sketchFile=document.getElementById("sk").files[0];
+if(!template || !rawText){
 
-const signatureFile=document.getElementById("si").files[0];
-
-if(!template){
-
-alert("Upload template first");
+alert("Upload template and paste client data.");
 
 return;
 
 }
 
-const templateBuffer=await getBuffer(template);
+try{
 
-const sketchBuffer=await getBuffer(sketchFile);
+const templateBuf=await template.arrayBuffer();
 
-const signatureBuffer=await getBuffer(signatureFile);
+const sketchBuf=await getImageBuffer(sketch);
+const signatureBuf=await getImageBuffer(signature);
 
-const zip=new PizZip(templateBuffer);
+const report=await window.createReport({
 
-const imageOptions={
+template:templateBuf,
 
-centered:false,
-
-getImage:function(tagValue){
-
-if(!tagValue) return null;
-
-return tagValue;
-
-},
-
-getSize:function(img,tagValue,tagName){
-
-if(tagName==="sketch") return [350,220];
-
-if(tagName==="signature") return [160,80];
-
-return [100,100];
-
-}
-
-};
-
-const imageModule=new window.ImageModule(imageOptions);
-
-const doc=new window.docxtemplater(zip,{
-
-modules:[imageModule],
-
-paragraphLoop:true,
-
-linebreaks:true
-
-});
-
-doc.render({
+data:{
 
 date:new Date().toLocaleDateString(),
 
@@ -204,32 +116,44 @@ street:extract(rawText,"STREET"),
 barangay:extract(rawText,"BARANGAY"),
 municipality:extract(rawText,"MUNICIPALITY"),
 
-sketch:sketchBuffer,
-signature:signatureBuffer
+sketch:sketchBuf?{
+_type:"image",
+source:sketchBuf,
+format:"png",
+width:350,
+height:220
+}:null,
+
+signature:signatureBuf?{
+_type:"image",
+source:signatureBuf,
+format:"png",
+width:160,
+height:80
+}:null
+
+}
 
 });
 
-const out=doc.getZip().generate({
+const blob=new Blob(
+[report],
+{type:"application/vnd.openxmlformats-officedocument.wordprocessingml.document"}
+);
 
-type:"blob",
+const clientName=extract(rawText,"LAST NAME") || "Client";
 
-mimeType:"application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+saveAs(blob,`SKYLINE_Application_${clientName}.docx`);
 
-});
+document.getElementById("status").innerText="✅ SUCCESS";
 
-const clientName=extract(rawText,"LAST NAME")||"Client";
+}catch(err){
 
-saveAs(out,"SKYLINE_Application_"+clientName+".docx");
+console.error(err);
 
-document.getElementById("status").innerText="SUCCESS!";
+alert(err.message);
 
-}catch(error){
-
-console.error(error);
-
-alert(error.message);
-
-document.getElementById("status").innerText="ERROR";
+document.getElementById("status").innerText="❌ ERROR";
 
 }
 
@@ -238,4 +162,4 @@ document.getElementById("status").innerText="ERROR";
 </script>
 
 </body>
-</html>s
+</html>
