@@ -322,6 +322,9 @@
                 spouse_occ: get("SPOUSE OCCUPATION"),
                 spouse_emp: get("SPOUSE EMPLOYER"),
                 spouse_add_occ: get("SPOUSE EMPLOYER ADDRESS"),
+
+                plan_name: extract(rawText, "PLAN NEEDED").toUpperCase(),
+                plan_value: extract(rawText, "PLAN NEEDED").replace(/\D/g, ""),
                 
                 // === CHECKBOX VARIABLES ===
                 // Gamitin ang {chk_owned}, {chk_rent}, etc sa mismong Word Document
