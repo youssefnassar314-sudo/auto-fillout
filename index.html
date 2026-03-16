@@ -2,49 +2,46 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Cheetah Pro | Template Edition 🐆</title>
-    
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/docxtemplater/3.45.0/docxtemplater.js"></script>
-    <script src="https://unpkg.com/pizzip@3.1.6/dist/pizzip.js"></script>
+    <title>Cheetah Pro | Modern Engine 🐆</title>
+    <script src="https://unpkg.com/docx-templates/lib/bundle.umd.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
-    <script src="https://unpkg.com/docxtemplater-image-module-free@1.1.1/build/imagemodule.js"></script>
 
     <style>
-        :root { --neon: #00ff9d; --dark: #0f0f12; }
-        body { font-family: sans-serif; background: var(--dark); color: white; display: flex; justify-content: center; padding: 40px; }
-        .card { width: 100%; max-width: 600px; background: #1a1a1f; padding: 30px; border-radius: 15px; border: 1px solid #333; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-        .status { padding: 10px; margin-bottom: 20px; border-radius: 5px; font-family: monospace; font-size: 0.8rem; background: rgba(0,255,157,0.1); color: var(--neon); border: 1px solid var(--neon); }
-        textarea { width: 100%; height: 150px; background: #000; border: 1px solid #444; color: var(--neon); padding: 10px; border-radius: 5px; font-family: monospace; box-sizing: border-box; }
-        label { display: block; margin-top: 15px; font-weight: bold; font-size: 0.8rem; color: #888; text-transform: uppercase; }
-        input { display: block; margin: 10px 0; color: #888; }
-        button { width: 100%; padding: 15px; background: var(--neon); color: black; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; margin-top: 20px; text-transform: uppercase; transition: 0.3s; }
-        button:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0,255,157,0.4); }
+        :root { --accent: #00d4ff; --bg: #050505; }
+        body { font-family: 'Inter', sans-serif; background: var(--bg); color: #fff; padding: 40px; }
+        .card { max-width: 600px; margin: auto; background: #111; padding: 30px; border-radius: 20px; border: 1px solid #222; box-shadow: 0 15px 35px rgba(0,212,255,0.1); }
+        .status { font-family: monospace; color: var(--accent); margin-bottom: 20px; font-size: 0.8rem; letter-spacing: 1px; }
+        textarea { width: 100%; height: 120px; background: #000; border: 1px solid #333; color: #00ff9d; padding: 12px; border-radius: 10px; resize: none; }
+        input[type="file"] { margin: 15px 0; font-size: 0.8rem; color: #666; }
+        button { width: 100%; padding: 18px; background: var(--accent); color: #000; border: none; border-radius: 12px; font-weight: 800; cursor: pointer; transition: 0.3s; }
+        button:hover { filter: brightness(1.2); transform: translateY(-2px); }
+        label { display: block; margin-top: 15px; font-size: 0.7rem; font-weight: bold; color: #444; text-transform: uppercase; }
     </style>
 </head>
 <body>
 
 <div class="card">
-    <h2 style="color: var(--neon); margin-top: 0;">Cheetah Pro: Template 🐆</h2>
-    <div id="status" class="status">READY_SYSTEM_V2.0_2026</div>
+    <div class="status">ENGINE: DOCX-TEMPLATES_V4 // MARCH 16, 2026</div>
+    <h2 style="margin-top:0">Cheetah Pro 🐆</h2>
 
-    <label>1. Upload Template (SKYLINE - Copy.docx)</label>
+    <label>1. SKYLINE Template (.docx)</label>
     <input type="file" id="tpl">
 
-    <label>2. Paste Client Data Block</label>
-    <textarea id="raw" placeholder="LAST NAME: Cruz&#10;FIRST NAME: Juan..."></textarea>
+    <label>2. Data Block</label>
+    <textarea id="raw" placeholder="PASTE DATA HERE..."></textarea>
 
-    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
-        <div>
-            <label>3. Sketch</label>
-            <input type="file" id="sk" accept="image/*">
+    <div style="display: flex; gap: 15px;">
+        <div style="flex: 1;">
+            <label>Sketch</label>
+            <input type="file" id="sk">
         </div>
-        <div>
-            <label>4. Signature</label>
-            <input type="file" id="si" accept="image/*">
+        <div style="flex: 1;">
+            <label>Signature</label>
+            <input type="file" id="si">
         </div>
     </div>
 
-    <button onclick="generateFromTemplate()">Generate Skyline Form</button>
+    <button onclick="buildReport()">Execute Generation</button>
 </div>
 
 <script>
@@ -58,67 +55,41 @@
     function extract(text, label) {
         const regex = new RegExp(label + "\\s*:\\s*(.*)", "i");
         const match = text.match(regex);
-        return match ? match[1].trim() : "";
+        return match ? match[1].trim() : "N/A";
     }
 
-    async function generateFromTemplate() {
-        const templateFile = document.getElementById('tpl').files[0];
-        const rawText = document.getElementById('raw').value;
-        const skFile = document.getElementById('sk').files[0];
-        const siFile = document.getElementById('si').files[0];
+    async function buildReport() {
+        const tFile = document.getElementById('tpl').files[0];
+        const raw = document.getElementById('raw').value;
+        const skBuf = await getBuf(document.getElementById('sk').files[0]);
+        const siBuf = await getBuf(document.getElementById('si').files[0]);
 
-        if (!templateFile || !rawText) return alert("Kulang ang inputs!");
+        if (!tFile || !raw) return alert("Upload template and paste data!");
 
         try {
-            document.getElementById('status').innerText = "PROCESSING_BUFFERS...";
-            
-            const tBuf = await getBuf(templateFile);
-            const skBuf = await getBuf(skFile);
-            const siBuf = await getBuf(siFile);
+            const template = await getBuf(tFile);
 
-            const zip = new PizZip(tBuf);
-            
-            // Setup Image Module
-            const imgOptions = {
-                centered: false,
-                getImage: (tagValue) => tagValue,
-                getSize: (img, tagValue, tagName) => {
-                    if (tagName === "sketch") return [350, 220];
-                    if (tagName === "signature") return [160, 80];
-                    return [10, 10];
-                }
-            };
-
-            const doc = new window.docxtemplater(zip, {
-                modules: [new window.ImageModule(imgOptions)],
-                paragraphLoop: true,
-                linebreaks: true
+            // Gagamit tayo ng createReport mula sa library
+            const report = await window.docxTemplates.createReport({
+                template,
+                data: {
+                    last_name: extract(raw, "LAST NAME"),
+                    first_name: extract(raw, "FIRST NAME"),
+                    mobile: extract(raw, "MOBILE PHONE"),
+                    email: extract(raw, "EMAIL ADDRESS"),
+                    date: "March 16, 2026",
+                    // Image Handling: Dito mo na iseset ang size!
+                    sketch: skBuf ? { width: 12, height: 7, data: skBuf, extension: '.png' } : null,
+                    signature: siBuf ? { width: 4, height: 2, data: siBuf, extension: '.png' } : null
+                },
+                // Ito ang delimiters para sa module na ito
+                cmdDelimiter: ['{', '}']
             });
 
-            // I-fill ang tags base sa format ng template mo 
-            doc.render({
-                date: "March 16, 2026",
-                last_name: extract(rawText, "LAST NAME"),
-                first_name: extract(rawText, "FIRST NAME"),
-                middle_name: extract(rawText, "MIDDLE NAME"),
-                mobile: extract(rawText, "MOBILE PHONE"),
-                email: extract(rawText, "EMAIL ADDRESS"),
-                id_no: extract(rawText, "ID TYPE/NO."),
-                house_no: extract(rawText, "HOUSE/BLOCK/UNIT NO."),
-                street: extract(rawText, "STREET"),
-                barangay: extract(rawText, "BARANGAY"),
-                municipality: extract(rawText, "MUNICIPALITY"),
-                sketch: skBuf,
-                signature: siBuf
-            });
-
-            const out = doc.getZip().generate({ type: "blob" });
-            saveAs(out, `SKYLINE_Application_${extract(rawText, "LAST NAME")}.docx`);
-            document.getElementById('status').innerText = "SUCCESS_DOWNLOADED";
-
-        } catch (error) {
-            console.error(error);
-            alert("Sablay: " + error.message);
+            saveAs(new Blob([report]), `SKYLINE_REPORT_${extract(raw, "LAST NAME")}.docx`);
+        } catch (err) {
+            console.error(err);
+            alert("Error: " + err.message);
         }
     }
 </script>
