@@ -30,20 +30,32 @@
     <textarea id="raw" placeholder="PASTE DATA HERE..."></textarea>
 
     <label>3. Images (Optional)</label>
-    <input type="file" id="sk" accept="image/jpeg">
-    <input type="file" id="si" accept="image/png">
+    <input type="file" id="sk" accept="image/jpeg, image/png">
+    <input type="file" id="si" accept="image/png, image/jpeg">
 
     <button onclick="generateDocument()">Generate & Download</button>
 </div>
 
 <script>
-    // 1x1 Transparent Pixel para iwas "reading '0'" error kung walang in-upload na image
-    const transparentPixel = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=";
+    // 1. Helper function para gawing tunay na ArrayBuffer ang fallback image
+    function getFallbackImage() {
+        // Pure Base64 payload (walang "data:image/png;base64," header)
+        const b64 = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=";
+        const binStr = window.atob(b64);
+        const arr = new Uint8Array(binStr.length);
+        for (let i = 0; i < binStr.length; i++) {
+            arr[i] = binStr.charCodeAt(i);
+        }
+        return arr.buffer; // Ito ang kailangan ng Image Module para hindi mag-crash
+    }
+    
+    // Naka-ready na agad ang transparent pixel buffer natin
+    const transparentPixelBuf = getFallbackImage();
 
     const getBuf = (f) => new Promise((res) => {
         if (!f) return res(null);
         const r = new FileReader();
-        r.onload = (e) => res(e.target.result);
+        r.onload = (e) => res(e.target.result); // Automatically returns ArrayBuffer
         r.readAsArrayBuffer(f);
     });
 
@@ -54,48 +66,45 @@
     }
 
     async function generateDocument() {
-        // 1. Inayos ang mga IDs para mag-match sa HTML
         const template = document.getElementById('tpl').files[0];
         const rawText = document.getElementById('raw').value;
         const sketch = document.getElementById('sk').files[0];
         const signature = document.getElementById('si').files[0];
 
-        // 2. Early Exit: Kung walang template o data, huwag nang ituloy
         if (!template || !rawText) {
             return alert("Kulang ang inputs! Paki-upload ang template at i-paste ang client data.");
         }
 
         try {
             document.getElementById('status').innerText = "⚙️ Initializing Buffers... March 16, 2026";
+            document.getElementById('status').style.background = "#fff3cd";
+            document.getElementById('status').style.color = "#856404";
 
-            // 3. Inayos ang function call from getFileBuffer to getBuf
+            // Binabasa ang files bilang ArrayBuffer
             const tBuf = await getBuf(template);
             const skBuf = await getBuf(sketch);
             const siBuf = await getBuf(signature);
 
-            // 4. Setup PizZip at Image Module
             const zip = new PizZip(tBuf);
             const ImgConstructor = window.ImageModule || window.DocxtemplaterImageModule;
 
             const imgOptions = {
                 centered: false,
-                // Fallback sa transparent pixel kung walang in-upload na image
-                getImage: (tagValue) => tagValue ? tagValue : transparentPixel,
+                // Kapag walang in-upload (skBuf/siBuf is null), ipapasok ang transparent ArrayBuffer
+                getImage: (tagValue) => tagValue ? tagValue : transparentPixelBuf,
                 getSize: (img, tagValue, tagName) => {
                     if (tagName === "sketch") return [350, 220];
                     if (tagName === "signature") return [160, 80];
-                    return [10, 10];
+                    return [10, 10]; // Fallback size kung sakali
                 }
             };
 
-            // 5. Initialize Docxtemplater
             const doc = new docxtemplater(zip, {
                 modules: [new ImgConstructor(imgOptions)],
                 paragraphLoop: true,
                 linebreaks: true
             });
 
-            // 6. Data Mapping: Inayos mula extractData() papuntang extract()
             doc.render({
                 date: "March 16, 2026",
                 last_name: extract(rawText, "LAST NAME"),
@@ -112,7 +121,6 @@
                 signature: siBuf
             });
 
-            // 7. Generation at Download
             const out = doc.getZip().generate({ 
                 type: "blob",
                 mimeType: "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
@@ -122,7 +130,8 @@
             saveAs(out, `SKYLINE_Application_${clientName}.docx`);
             
             document.getElementById('status').innerText = "✅ SUCCESS: File Ready!";
-            document.getElementById('status').className = "status ready";
+            document.getElementById('status').style.background = "#d4edda";
+            document.getElementById('status').style.color = "#155724";
 
         } catch (error) {
             console.error("DEBUG ERROR:", error);
