@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>CHEETAH PRO | FULL RECOVERY 🐆</title>
+    <title>CHEETAH PRO | THE MAGIC FIX 🐆</title>
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/docxtemplater/3.45.0/docxtemplater.js"></script>
     <script src="https://unpkg.com/pizzip@3.1.6/dist/pizzip.js"></script>
@@ -14,7 +14,7 @@
         body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: #eee; display: flex; justify-content: center; padding: 20px; }
         .container { width: 100%; max-width: 650px; background: #141417; padding: 35px; border-radius: 15px; border: 1px solid #2a2a30; box-shadow: 0 20px 50px rgba(0,0,0,0.5); }
         .status-bar { background: rgba(0, 255, 157, 0.05); border: 1px solid rgba(0, 255, 157, 0.2); padding: 12px; border-radius: 8px; font-family: monospace; font-size: 0.8rem; margin-bottom: 25px; color: var(--neon); }
-        textarea { width: 100%; height: 160px; background: #000; border: 1px solid #333; color: #00ff00; padding: 15px; border-radius: 8px; font-family: 'Courier New', monospace; box-sizing: border-box; outline: none; }
+        textarea { width: 100%; height: 160px; background: #000; border: 1px solid #333; color: #00ff9d; padding: 15px; border-radius: 8px; font-family: 'Courier New', monospace; box-sizing: border-box; outline: none; }
         .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin: 20px 0; }
         button { width: 100%; padding: 20px; background: var(--neon); color: #000; border: none; border-radius: 10px; font-weight: 900; cursor: pointer; text-transform: uppercase; transition: 0.3s; }
         button:hover { box-shadow: 0 0 25px rgba(0, 255, 157, 0.5); transform: translateY(-2px); }
@@ -26,13 +26,13 @@
 
 <div class="container">
     <h2 style="color: var(--neon); margin: 0 0 10px 0;">CHEETAH PRO OS 🐆</h2>
-    <div id="status" class="status-bar">SYSTEM_ONLINE // MARCH 16, 2026</div>
+    <div id="status" class="status-bar">SYSTEM_READY // MIXED TAGS FIXED</div>
 
     <label>1. Application Template (SKYLINE.docx)</label>
     <input type="file" id="tpl" style="margin-bottom: 25px;">
 
     <label>2. Paste Client Data Block</label>
-    <textarea id="raw" placeholder="PASTE DATA HERE... (e.g. LAST NAME: Cruz)"></textarea>
+    <textarea id="raw" placeholder="PASTE DATA HERE..."></textarea>
 
     <div class="grid">
         <div style="background: #1c1c21; padding: 10px; border-radius: 8px;">
@@ -49,9 +49,6 @@
 </div>
 
 <script>
-    // --- CORE FUNCTIONS ---
-    
-    // Convert file to ArrayBuffer
     const getBuf = (f) => new Promise((res) => {
         if (!f) return res(null);
         const r = new FileReader();
@@ -59,7 +56,6 @@
         r.readAsArrayBuffer(f);
     });
 
-    // Extract data from the pasted block
     function extract(text, label) {
         const regex = new RegExp(label + "\\s*:\\s*(.*)", "i");
         const match = text.match(regex);
@@ -76,7 +72,7 @@
         if (!tFile || !rawText) return alert("Missing Template or Client Data!");
 
         try {
-            status.innerText = "PROCESSING_RECOVERY_ENGINE...";
+            status.innerText = "⚙️ ALIGNING_TEMPLATE_TAGS...";
             status.style.color = "#00d4ff";
 
             const tBuf = await getBuf(tFile);
@@ -85,7 +81,15 @@
 
             const zip = new PizZip(tBuf);
 
-            // Image Module Setup
+            // --- THE MAGIC HACK ---
+            // Papalitan natin ang +++sketch+++ ng {%sketch} sa loob mismo ng file
+            // para mabasa siya ng Image Module nang tama, habang naiiwan ang {last_name}
+            let docXml = zip.file("word/document.xml").asText();
+            docXml = docXml.replace(/\+\+\+sketch\+\+\+/g, "{%sketch}");
+            docXml = docXml.replace(/\+\+\+signature\+\+\+/g, "{%signature}");
+            zip.file("word/document.xml", docXml);
+            // ----------------------
+
             const imgOptions = {
                 centered: false,
                 getImage: (tagValue) => tagValue,
@@ -96,15 +100,13 @@
                 }
             };
 
-            // Initialize Docxtemplater with Image Module and Custom Delimiters
+            // HINDI na natin babaguhin ang delimiters, default { } na lang ang gamit
             const doc = new window.docxtemplater(zip, {
                 modules: [new window.ImageModule(imgOptions)],
-                delimiters: { start: '+++', end: '+++' },
                 paragraphLoop: true,
                 linebreaks: true
             });
 
-            // Mapping all data points from your template
             doc.render({
                 date: "March 16, 2026",
                 last_name: extract(rawText, "LAST NAME"),
@@ -117,7 +119,6 @@
                 street: extract(rawText, "STREET"),
                 barangay: extract(rawText, "BARANGAY"),
                 municipality: extract(rawText, "MUNICIPALITY"),
-                // Images map to +++sketch+++ and +++signature+++
                 sketch: skBuf,
                 signature: siBuf
             });
@@ -128,14 +129,14 @@
             });
 
             const clientName = extract(rawText, "LAST NAME") || "NewClient";
-            saveAs(out, `SKYLINE_RECOVERY_${clientName}.docx`);
+            saveAs(out, `SKYLINE_${clientName}.docx`);
 
-            status.innerText = "✅ SUCCESS: DOCUMENT_GENERATED";
+            status.innerText = "✅ SUCCESS: FULL_DOCUMENT_GENERATED";
             status.style.color = "var(--neon)";
 
         } catch (err) {
             console.error(err);
-            status.innerText = "❌ CRITICAL_ERROR: " + err.message;
+            status.innerText = "❌ ERROR: " + err.message;
             status.style.color = "#ff4d4d";
             alert("Engine Error: " + err.message);
         }
