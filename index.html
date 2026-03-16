@@ -1,153 +1,194 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Cheetah Pro | Zero-Crash Edition 🐆</title>
-    <script src="pizzip.min.js"></script>
-    <script src="docxtemplater.js"></script>
-    <script src="FileSaver.min.js"></script>
-    <script src="docxtemplater-image-module-free.js"></script>
-    <style>
-        body { font-family: sans-serif; padding: 20px; background: #f4f4f4; }
-        .card { max-width: 600px; margin: auto; background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
-        .status { padding: 10px; margin-bottom: 20px; border-radius: 6px; text-align: center; font-weight: bold; }
-        .ready { background: #d4edda; color: #155724; }
-        textarea { width: 100%; height: 150px; margin: 10px 0; border-radius: 5px; border: 1px solid #ccc; padding: 10px; }
-        input { display: block; margin-bottom: 10px; }
-        button { width: 100%; padding: 15px; background: #28a745; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; }
-    </style>
+<meta charset="UTF-8">
+<title>Cheetah Pro | Zero-Crash Edition 🐆</title>
+
+<script src="pizzip.min.js"></script>
+<script src="docxtemplater.js"></script>
+<script src="FileSaver.min.js"></script>
+<script src="docxtemplater-image-module-free.js"></script>
+
+<style>
+body { font-family: sans-serif; padding: 20px; background: #f4f4f4; }
+.card { max-width: 600px; margin: auto; background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+.status { padding: 10px; margin-bottom: 20px; border-radius: 6px; text-align: center; font-weight: bold; }
+.ready { background: #d4edda; color: #155724; }
+textarea { width: 100%; height: 150px; margin: 10px 0; border-radius: 5px; border: 1px solid #ccc; padding: 10px; }
+input { display: block; margin-bottom: 10px; }
+button { width: 100%; padding: 15px; background: #28a745; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; }
+</style>
 </head>
+
 <body>
 
 <div class="card">
-    <h2>Cheetah Pro: Magic Fill 🐆</h2>
-    <div id="status" class="status ready">SYSTEM READY | March 16, 2026</div>
 
-    <label>1. Template (SKYLINE.docx)</label>
-    <input type="file" id="tpl">
+<h2>Cheetah Pro: Magic Fill 🐆</h2>
+<div id="status" class="status ready">SYSTEM READY | March 16, 2026</div>
 
-    <label>2. Data Block</label>
-    <textarea id="raw" placeholder="PASTE DATA HERE..."></textarea>
+<label>1. Template (SKYLINE.docx)</label>
+<input type="file" id="tpl">
 
-    <label>3. Images (Optional)</label>
-    <input type="file" id="sk" accept="image/jpeg, image/png">
-    <input type="file" id="si" accept="image/png, image/jpeg">
+<label>2. Data Block</label>
+<textarea id="raw" placeholder="PASTE DATA HERE..."></textarea>
 
-    <button onclick="generateDocument()">Generate & Download</button>
+<label>3. Images (Optional)</label>
+<input type="file" id="sk" accept="image/png, image/jpeg">
+<input type="file" id="si" accept="image/png, image/jpeg">
+
+<button onclick="generateDocument()">Generate & Download</button>
+
 </div>
 
 <script>
-    // 1. Mas malinis na 1x1 Transparent PNG Base64
-    const base64Data = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==";
 
-    // 2. Helper function para i-convert sa ArrayBuffer nang tama
-    function base64ToArrayBuffer(base64) {
-        var binary_string = window.atob(base64);
-        var len = binary_string.length;
-        var bytes = new Uint8Array(len);
-        for (var i = 0; i < len; i++) {
-            bytes[i] = binary_string.charCodeAt(i);
-        }
-        return bytes.buffer;
-    }
+// transparent pixel para hindi mag crash kapag walang image
+const base64Pixel="iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==";
 
-    const transparentPixelBuf = base64ToArrayBuffer(base64Data);
+function base64ToArrayBuffer(base64){
+const binary=window.atob(base64);
+const len=binary.length;
+const bytes=new Uint8Array(len);
+for(let i=0;i<len;i++){
+bytes[i]=binary.charCodeAt(i);
+}
+return bytes.buffer;
+}
 
-    const getBuf = (f) => new Promise((res) => {
-        if (!f) return res(null);
-        const r = new FileReader();
-        r.onload = (e) => res(e.target.result);
-        r.readAsArrayBuffer(f);
-    });
+const transparentPixelBuf=base64ToArrayBuffer(base64Pixel);
 
-    function extract(text, label) {
-        const regex = new RegExp(label + "\\s*:\\s*(.*)", "i");
-        const match = text.match(regex);
-        return match ? match[1].trim() : "";
-    }
+// convert file to buffer
+function getBuffer(file){
+return new Promise((resolve)=>{
+if(!file) return resolve(null);
+const reader=new FileReader();
+reader.onload=(e)=>resolve(e.target.result);
+reader.readAsArrayBuffer(file);
+});
+}
 
-    async function generateDocument() {
-        const template = document.getElementById('tpl').files[0];
-        const rawText = document.getElementById('raw').value;
-        const sketch = document.getElementById('sk').files[0];
-        const signature = document.getElementById('si').files[0];
+// extract text values
+function extract(text,label){
+const regex=new RegExp(label+"\\s*:\\s*(.+)","i");
+const match=text.match(regex);
+return match?match[1].trim():"";
+}
 
-        if (!template || !rawText) {
-            return alert("Kulang ang inputs! Paki-upload ang template at i-paste ang client data.");
-        }
+async function generateDocument(){
 
-        try {
-            document.getElementById('status').innerText = "⚙️ Initializing Buffers... March 16, 2026";
-            document.getElementById('status').style.background = "#fff3cd";
-            document.getElementById('status').style.color = "#856404";
+const template=document.getElementById("tpl").files[0];
+const rawText=document.getElementById("raw").value;
+const sketch=document.getElementById("sk").files[0];
+const signature=document.getElementById("si").files[0];
 
-            const tBuf = await getBuf(template);
-            const skBuf = await getBuf(sketch);
-            const siBuf = await getBuf(signature);
+if(!template||!rawText){
+alert("Upload template at client data muna.");
+return;
+}
 
-            // 🔥 DITO ANG MAGIC FIX: Harangin na natin ang null bago pa pumasok sa Render!
-            const finalSketch = skBuf ? skBuf : transparentPixelBuf;
-            const finalSignature = siBuf ? siBuf : transparentPixelBuf;
+try{
 
-            const zip = new PizZip(tBuf);
-            const ImgConstructor = window.ImageModule || window.DocxtemplaterImageModule;
+const status=document.getElementById("status");
+status.innerText="⚙️ Processing...";
+status.style.background="#fff3cd";
+status.style.color="#856404";
 
-            const imgOptions = {
-                centered: false,
-                getImage: function(tagValue) {
-                    // Safe na ito kasi laging ArrayBuffer ang papasok dito, hindi na magiging null.
-                    return tagValue; 
-                },
-                getSize: function(img, tagValue, tagName) {
-                    if (tagName === "sketch" && tagValue !== transparentPixelBuf) return [350, 220];
-                    if (tagName === "signature" && tagValue !== transparentPixelBuf) return [160, 80];
-                    return [1, 1]; // Paliitin ng 1x1 kapag walang in-upload para hindi makagulo sa layout
-                }
-            };
+const templateBuf=await getBuffer(template);
+const sketchBuf=await getBuffer(sketch);
+const signatureBuf=await getBuffer(signature);
 
-            const doc = new docxtemplater(zip, {
-                modules: [new ImgConstructor(imgOptions)],
-                paragraphLoop: true,
-                linebreaks: true
-            });
+// kung walang image gamitin transparent pixel
+const finalSketch=sketchBuf||transparentPixelBuf;
+const finalSignature=signatureBuf||transparentPixelBuf;
 
-            // Guaranteed na may laman ang sketch at signature dito (kahit transparent pixel lang)
-            doc.render({
-                date: "March 16, 2026",
-                last_name: extract(rawText, "LAST NAME"),
-                first_name: extract(rawText, "FIRST NAME"),
-                middle_name: extract(rawText, "MIDDLE NAME"),
-                mobile: extract(rawText, "MOBILE PHONE"),
-                email: extract(rawText, "EMAIL ADDRESS"),
-                id_no: extract(rawText, "ID TYPE/NO."),
-                house_no: extract(rawText, "HOUSE/BLOCK/UNIT NO."),
-                street: extract(rawText, "STREET"),
-                barangay: extract(rawText, "BARANGAY"),
-                municipality: extract(rawText, "MUNICIPALITY"),
-                sketch: finalSketch,
-                signature: finalSignature
-            });
+const zip=new PizZip(templateBuf);
 
-            const out = doc.getZip().generate({ 
-                type: "blob",
-                mimeType: "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-            });
+const ImgConstructor=window.ImageModule||window.DocxtemplaterImageModule;
 
-            const clientName = extract(rawText, "LAST NAME") || "New_Client";
-            saveAs(out, `SKYLINE_Application_${clientName}.docx`);
-            
-            document.getElementById('status').innerText = "✅ SUCCESS: File Ready!";
-            document.getElementById('status').style.background = "#d4edda";
-            document.getElementById('status').style.color = "#155724";
+const imageOptions={
 
-        } catch (error) {
-            console.error("DEBUG ERROR:", error);
-            alert("SABLAY: " + error.message);
-            document.getElementById('status').innerText = "❌ ERROR: " + error.message;
-            document.getElementById('status').style.background = "#f8d7da";
-            document.getElementById('status').style.color = "#721c24";
-        }
-    }
+centered:false,
+
+getImage:function(tagValue){
+if(!tagValue){
+return transparentPixelBuf;
+}
+return tagValue;
+},
+
+getSize:function(img,tagValue,tagName){
+
+if(tagName==="sketch"){
+return [350,220];
+}
+
+if(tagName==="signature"){
+return [160,80];
+}
+
+return [1,1];
+}
+
+};
+
+const doc=new docxtemplater(zip,{
+modules:[new ImgConstructor(imageOptions)],
+paragraphLoop:true,
+linebreaks:true
+});
+
+doc.render({
+
+date:new Date().toLocaleDateString(),
+
+last_name:extract(rawText,"LAST NAME"),
+first_name:extract(rawText,"FIRST NAME"),
+middle_name:extract(rawText,"MIDDLE NAME"),
+
+mobile:extract(rawText,"MOBILE PHONE"),
+email:extract(rawText,"EMAIL ADDRESS"),
+id_no:extract(rawText,"ID TYPE/NO."),
+
+house_no:extract(rawText,"HOUSE/BLOCK/UNIT NO."),
+street:extract(rawText,"STREET"),
+barangay:extract(rawText,"BARANGAY"),
+municipality:extract(rawText,"MUNICIPALITY"),
+
+sketch:finalSketch,
+signature:finalSignature
+
+});
+
+const output=doc.getZip().generate({
+type:"blob",
+mimeType:"application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+});
+
+const clientName=extract(rawText,"LAST NAME")||"Client";
+
+saveAs(output,`SKYLINE_Application_${clientName}.docx`);
+
+status.innerText="✅ SUCCESS! File Ready";
+status.style.background="#d4edda";
+status.style.color="#155724";
+
+}catch(err){
+
+console.error(err);
+
+const status=document.getElementById("status");
+status.innerText="❌ ERROR: "+err.message;
+status.style.background="#f8d7da";
+status.style.color="#721c24";
+
+alert("Error: "+err.message);
+
+}
+
+}
+
 </script>
+
 </body>
 </html>
