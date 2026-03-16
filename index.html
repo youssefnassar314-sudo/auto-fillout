@@ -175,60 +175,78 @@
     }
 
     async function executeEngine() {
-        const status = document.getElementById('status');
-        const tFile = document.getElementById('tpl').files[0];
-        const raw = document.getElementById('raw').value;
-        const skFile = document.getElementById('sk').files[0];
-        const siFile = document.getElementById('si').files[0];
+    const status = document.getElementById('status');
+    const tFile = document.getElementById('tpl').files[0];
+    const raw = document.getElementById('raw').value;
+    const skFile = document.getElementById('sk').files[0];
+    const siFile = document.getElementById('si').files[0];
 
-        if (!tFile || !raw) return alert("Missing Template or Data Block!");
+    if (!tFile || !raw) return alert("Missing Template or Data Block!");
 
-        try {
+    try {
+        if (status) {
             status.innerText = "INITIALIZING_MODERN_ENGINE...";
             status.style.color = "var(--blue)";
+        }
 
-            const tBuf = await getBuf(tFile);
-            const skBuf = await getBuf(skFile);
-            const siBuf = await getBuf(siFile);
+        const tBuf = await getBuf(tFile);
+        const skBuf = await getBuf(skFile);
+        const siBuf = await getBuf(siFile);
 
-            // UMD Access: Handle docx-templates structure
-            const createReport = window.docxTemplates.default || window.docxTemplates.createReport || window.docxTemplates;
+        // --- NUCLEAR FIX PARA SA 'createReport' ---
+        let createReport;
+        if (window.docxTemplates) {
+            // Tinitingnan lahat ng posibleng pagtataguan ng function
+            createReport = window.docxTemplates.createReport || 
+                           window.docxTemplates.default || 
+                           (window.docxTemplates.default && window.docxTemplates.default.createReport) ||
+                           window.docxTemplates;
+        }
 
-            const report = await createReport({
-                template: tBuf,
-                data: {
-                    last_name: extract(raw, "LAST NAME"),
-                    first_name: extract(raw, "FIRST NAME"),
-                    middle_name: extract(raw, "MIDDLE NAME"),
-                    mobile: extract(raw, "MOBILE PHONE"),
-                    email: extract(raw, "EMAIL ADDRESS"),
-                    id_no: extract(raw, "ID TYPE/NO."),
-                    house_no: extract(raw, "HOUSE/BLOCK/UNIT NO."),
-                    street: extract(raw, "STREET"),
-                    barangay: extract(raw, "BARANGAY"),
-                    municipality: extract(raw, "MUNICIPALITY"),
-                    date: "March 16, 2026",
-                    // Use {IMAGE sketch} in Word 
-                    sketch: skBuf ? { width: 12, height: 7, data: skBuf, extension: '.png' } : null,
-                    // Use {IMAGE signature} in Word 
-                    signature: siBuf ? { width: 4, height: 2, data: siBuf, extension: '.png' } : null
-                },
-                cmdDelimiter: ['{', '}']
-            });
+        if (typeof createReport !== 'function') {
+            throw new Error("Library not loaded correctly. Check internet connection.");
+        }
+        // ------------------------------------------
 
-            const blob = new Blob([report], { type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' });
-            saveAs(blob, `SKYLINE_PRO_${extract(raw, "LAST NAME")}.docx`);
+        const report = await createReport({
+            template: tBuf,
+            data: {
+                last_name: extract(raw, "LAST NAME"),
+                first_name: extract(raw, "FIRST NAME"),
+                middle_name: extract(raw, "MIDDLE NAME"),
+                mobile: extract(raw, "MOBILE PHONE"),
+                email: extract(raw, "EMAIL ADDRESS"),
+                id_no: extract(raw, "ID TYPE/NO."),
+                house_no: extract(raw, "HOUSE/BLOCK/UNIT NO."),
+                street: extract(raw, "STREET"),
+                barangay: extract(raw, "BARANGAY"),
+                municipality: extract(raw, "MUNICIPALITY"),
+                date: "March 16, 2026",
+                // Image handling: Siguraduhin na {IMAGE sketch} ang nasa Word 
+                sketch: skBuf ? { width: 12, height: 7, data: skBuf, extension: '.png' } : null,
+                signature: siBuf ? { width: 4, height: 2, data: siBuf, extension: '.png' } : null
+            },
+            cmdDelimiter: ['{', '}']
+        });
 
+        const blob = new Blob([report], { type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' });
+        const clientName = extract(raw, "LAST NAME") || "Client";
+        saveAs(blob, `SKYLINE_PRO_${clientName}.docx`);
+
+        if (status) {
             status.innerText = "SUCCESS: DOCUMENT_GENERATED";
             status.style.color = "var(--neon)";
+        }
 
-        } catch (err) {
-            console.error(err);
+    } catch (err) {
+        console.error("DEBUG ENGINE ERROR:", err);
+        if (status) {
             status.innerText = "CRITICAL_ERROR: " + err.message;
             status.style.color = "#ff4d4d";
-            alert("Engine Error: " + err.message);
         }
+        alert("Engine Error: " + err.message);
     }
+}
 </script>
 
 </body>
