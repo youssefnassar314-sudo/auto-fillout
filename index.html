@@ -28,10 +28,11 @@
             color: var(--text-main);
             display: flex;
             justify-content: center;
-            align-items: center;
+            align-items: flex-start; /* Changed to flex-start para di ma-cut pag humaba */
             min-height: 100vh;
             margin: 0;
-            padding: 20px;
+            padding: 40px 20px;
+            box-sizing: border-box;
         }
 
         .workspace {
@@ -140,7 +141,7 @@
             box-shadow: 0 0 0 4px var(--focus-ring);
         }
 
-        button {
+        button.primary-btn {
             width: 100%;
             padding: 18px;
             background: var(--accent-gradient);
@@ -154,7 +155,7 @@
             box-shadow: 0 10px 20px rgba(79, 70, 229, 0.2);
         }
 
-        button:hover {
+        button.primary-btn:hover {
             transform: translateY(-2px);
             box-shadow: 0 15px 25px rgba(79, 70, 229, 0.3);
         }
@@ -167,6 +168,77 @@
             min-height: 22px;
             transition: color 0.3s ease;
         }
+
+        /* --- EMAIL SNIPPETS STYLES --- */
+        .email-section {
+            display: none;
+            margin-top: 30px;
+            padding-top: 25px;
+            border-top: 1px solid var(--border);
+            animation: slideUp 0.5s ease;
+        }
+
+        .copy-group {
+            margin-bottom: 20px;
+        }
+
+        .copy-group label {
+            color: #4f46e5;
+        }
+
+        .copy-box {
+            display: flex;
+            align-items: center;
+            background: #f1f5f9;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            padding: 10px 14px;
+            margin-bottom: 8px;
+        }
+
+        .copy-box input, .copy-box textarea {
+            background: transparent;
+            border: none;
+            width: 100%;
+            font-size: 0.85rem;
+            font-family: 'Inter', sans-serif;
+            color: var(--text-main);
+            margin: 0;
+            padding: 0;
+            height: auto;
+            resize: none;
+        }
+        
+        .copy-box input:focus, .copy-box textarea:focus {
+            outline: none;
+            box-shadow: none;
+        }
+
+        .copy-btn {
+            background: #e2e8f0;
+            color: #475569;
+            border: none;
+            border-radius: 6px;
+            padding: 6px 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            cursor: pointer;
+            margin-left: 10px;
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+
+        .copy-btn:hover {
+            background: #cbd5e1;
+            color: #0f172a;
+        }
+
+        .options-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 10px;
+        }
+
     </style>
 </head>
 <body>
@@ -181,15 +253,56 @@
     <div class="file-upload-wrapper">
         <input type="file" id="tpl" accept=".docx">
         <label for="tpl" class="file-upload-box" id="upload-label">
-            📄 Upload SKYLINE.docx Template
+            📄 Upload Template (Contact Pat for Template)
         </label>
     </div>
 
     <label>2. Client Information Block</label>
     <textarea id="raw" placeholder="Paste full client format here..."></textarea>
 
-    <button onclick="handleGenerate()">Generate Application</button>
+    <button class="primary-btn" onclick="handleGenerate()">Generate Application</button>
     <div id="status"></div>
+
+    <div class="email-section" id="emailSection">
+        <div class="header" style="margin-bottom: 20px;">
+            <h2 style="font-size: 1.3rem;">📋 Email Snippets</h2>
+            <div class="subtitle">Ready to copy-paste</div>
+        </div>
+
+        <div class="copy-group">
+            <label>Email Subject</label>
+            <div class="copy-box">
+                <input type="text" id="snip-subject" readonly>
+                <button class="copy-btn" onclick="copyText('snip-subject')">Copy</button>
+            </div>
+        </div>
+
+        <div class="copy-group">
+            <label>Short Format (Name / Municipality)</label>
+            <div class="copy-box">
+                <input type="text" id="snip-short" readonly>
+                <button class="copy-btn" onclick="copyText('snip-short')">Copy</button>
+            </div>
+        </div>
+
+        <div class="copy-group">
+            <label>Email Body Options</label>
+            <div class="options-grid">
+                <div class="copy-box">
+                    <textarea id="snip-body1" rows="3" readonly></textarea>
+                    <button class="copy-btn" onclick="copyText('snip-body1')">Copy</button>
+                </div>
+                <div class="copy-box">
+                    <textarea id="snip-body2" rows="3" readonly></textarea>
+                    <button class="copy-btn" onclick="copyText('snip-body2')">Copy</button>
+                </div>
+                <div class="copy-box">
+                    <textarea id="snip-body3" rows="3" readonly></textarea>
+                    <button class="copy-btn" onclick="copyText('snip-body3')">Copy</button>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 
 <script>
@@ -218,7 +331,7 @@
         });
     }
 
-    // --- SMART PARSER (Para sa multi-line na walang colon) ---
+    // --- SMART PARSER ---
     function parseData(rawText) {
         const lines = rawText.split('\n');
         const data = {};
@@ -228,7 +341,6 @@
             line = line.trim();
             if (!line) continue; 
             
-            // Ignorahin ang mga checkbox lines sa normal parsing para di magulo
             if (line.startsWith('(')) continue;
 
             const colonIndex = line.indexOf(':');
@@ -244,16 +356,25 @@
         return data;
     }
 
-    // --- CHECKBOX DETECTOR ---
-    // Hahanapin nito kung may (x) o (/) sa tabi ng salita na hinahanap natin
-    function getCheck(rawText, optionName) {
-        // Regex: Naghahanap ng (x), (X), (/), o (v) bago ang salita
-        const regex = new RegExp(`\\([xX/vV]\\)\\s*${optionName}`, 'i');
-        if (regex.test(rawText)) {
-            return "☑"; // Checkmark symbol kapag meron
-        } else {
-            return "☐"; // Empty box symbol kapag wala
-        }
+    // --- COPY FUNCTION ---
+    function copyText(elementId) {
+        const copyText = document.getElementById(elementId);
+        copyText.select();
+        copyText.setSelectionRange(0, 99999); // For mobile devices
+        navigator.clipboard.writeText(copyText.value);
+        
+        // Visual feedback
+        const btn = event.target;
+        const originalText = btn.innerText;
+        btn.innerText = "Copied!";
+        btn.style.background = "#10b981";
+        btn.style.color = "white";
+        
+        setTimeout(() => {
+            btn.innerText = originalText;
+            btn.style.background = "#e2e8f0";
+            btn.style.color = "#475569";
+        }, 1500);
     }
 
     function handleGenerate() {
@@ -269,6 +390,7 @@
 
         status.innerHTML = "Processing document...";
         status.style.color = "#4f46e5";
+        document.getElementById('emailSection').style.display = "none";
 
         setTimeout(() => processDocument(tFile, rawText, status), 50);
     }
@@ -285,7 +407,6 @@
 
             const clientData = parseData(rawText);
 
-            // Helper function para makuha ang data at naka-ALL CAPS
             function get(key, isEmail = false) {
                 let val = clientData[key.toUpperCase()] || "";
                 return isEmail ? val : val.toUpperCase();
@@ -301,7 +422,7 @@
                 op: get("OFFICE PHONE"),
                 mobile: get("MOBILE PHONE"),
                 email: get("EMAIL ADDRESS", true), 
-                id_no: get("ID TYPE/NO."), // Kukunin buo pati word na "PASSPORT"
+                id_no: get("ID TYPE/NO."), 
                 
                 birthdate: get("BIRTHDATE"),
                 age: get("AGE"),
@@ -317,7 +438,7 @@
                 municipality: get("MUNICIPALITY"),
                 
                 occupation: get("OCCUPATION/POSITION"),
-                employer: get("EMPLOYER"), // Mababasa na niya pati "HOLDINGS INC." sa next line!
+                employer: get("EMPLOYER"), 
                 occ_address: get("ADDRESS"),
                 spouse_occ: get("SPOUSE OCCUPATION"),
                 spouse_emp: get("SPOUSE EMPLOYER"),
@@ -325,7 +446,6 @@
 
                 plan_name: get("PLAN"),
                 plan_value: get("PLAN VALUE")
-                
             });
 
             const out = doc.getZip().generate({ 
@@ -333,13 +453,31 @@
                 mimeType: "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
             });
 
-            // Smart Filename
+            // Smart Variables for Snippets
             const lName = get("LAST NAME") || "UNKNOWN";
             const fName = get("FIRST NAME") || "CLIENT";
             const muni = get("MUNICIPALITY") || "NO_CITY";
-            const fileName = `${lName}, ${fName} - ${muni}.docx`;
+            const plan = get("PLAN") || "NO_PLAN";
 
+            // Generate File
+            const fileName = `${lName}, ${fName} - ${muni}.docx`;
             saveAs(out, fileName);
+
+            // --- POPULATE EMAIL SNIPPETS ---
+            document.getElementById('snip-subject').value = `${lName}, ${fName} - ${muni} - ${plan}`;
+            document.getElementById('snip-short').value = `${lName}, ${fName} / ${muni}`;
+            
+            // Option 1: Friendly Taglish
+            document.getElementById('snip-body1').value = `Magandang araw po!\n\nAttached herewith is the completed application form for ${fName} ${lName}. Let me know po if you need anything else.\n\nSalamat!`;
+            
+            // Option 2: Formal English
+            document.getElementById('snip-body2').value = `Good day,\n\nPlease find attached the application details and requirements for ${fName} ${lName} (${plan}) for your perusal.\n\nThank you and best regards,`;
+            
+            // Option 3: Short & Direct
+            document.getElementById('snip-body3').value = `Good day!\n\nSending over the generated application document for ${lName}, ${fName} from ${muni}.\n\nThank you.`;
+
+            // Show Section
+            document.getElementById('emailSection').style.display = "block";
 
             status.innerHTML = "✨ Application successfully generated!";
             status.style.color = "#10b981";
