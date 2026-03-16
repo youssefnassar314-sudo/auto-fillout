@@ -2,162 +2,49 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CHEETAH PRO 2026 | MODERN ENGINE</title>
+    <title>CHEETAH PRO 2026 | RELIABLE ENGINE</title>
     
-    <script src="https://unpkg.com/docx-templates/lib/bundle.umd.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/docxtemplater/3.45.0/docxtemplater.js"></script>
+    <script src="https://unpkg.com/pizzip@3.1.6/dist/pizzip.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+    <script src="https://unpkg.com/docxtemplater-image-module-free@1.1.1/build/imagemodule.js"></script>
 
     <style>
-        :root {
-            --neon: #00ff9d;
-            --blue: #00d4ff;
-            --bg: #0a0a0c;
-            --card: #141417;
-            --border: #2a2a30;
-        }
-
-        body {
-            font-family: 'Segoe UI', Tahoma, sans-serif;
-            background: var(--bg);
-            color: #eee;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            margin: 0;
-        }
-
-        .container {
-            width: 100%;
-            max-width: 650px;
-            background: var(--card);
-            border: 1px solid var(--border);
-            border-radius: 20px;
-            padding: 40px;
-            box-shadow: 0 25px 50px rgba(0,0,0,0.6);
-            position: relative;
-        }
-
-        .container::after {
-            content: '';
-            position: absolute;
-            top: 0; left: 0; right: 0; height: 5px;
-            background: linear-gradient(90deg, var(--neon), var(--blue));
-            border-radius: 20px 20px 0 0;
-        }
-
-        h2 {
-            margin: 0 0 5px 0;
-            color: var(--neon);
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            font-size: 1.5rem;
-        }
-
-        .status-bar {
-            background: rgba(0, 255, 157, 0.05);
-            border: 1px solid rgba(0, 255, 157, 0.2);
-            padding: 12px;
-            border-radius: 8px;
-            font-family: monospace;
-            font-size: 0.8rem;
-            margin-bottom: 25px;
-            color: var(--neon);
-        }
-
-        label {
-            display: block;
-            margin-bottom: 8px;
-            font-size: 0.75rem;
-            font-weight: bold;
-            color: #888;
-            text-transform: uppercase;
-        }
-
-        textarea {
-            width: 100%;
-            height: 150px;
-            background: #000;
-            border: 1px solid var(--border);
-            border-radius: 10px;
-            color: #00ff00;
-            padding: 15px;
-            font-family: 'Courier New', monospace;
-            resize: none;
-            box-sizing: border-box;
-            margin-bottom: 20px;
-            outline: none;
-        }
-
-        textarea:focus { border-color: var(--neon); }
-
-        .file-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 15px;
-            margin-bottom: 25px;
-        }
-
-        .input-group {
-            background: #1c1c21;
-            padding: 15px;
-            border-radius: 10px;
-            border: 1px solid var(--border);
-        }
-
-        input[type="file"] {
-            width: 100%;
-            font-size: 0.7rem;
-            color: #666;
-        }
-
-        button {
-            width: 100%;
-            padding: 20px;
-            background: var(--neon);
-            color: #000;
-            border: none;
-            border-radius: 12px;
-            font-weight: 900;
-            text-transform: uppercase;
-            cursor: pointer;
-            transition: 0.3s;
-            box-shadow: 0 10px 20px rgba(0, 255, 157, 0.2);
-        }
-
-        button:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 15px 30px rgba(0, 255, 157, 0.4);
-        }
+        :root { --neon: #00ff9d; --bg: #0a0a0c; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: #eee; display: flex; justify-content: center; padding: 20px; }
+        .container { width: 100%; max-width: 600px; background: #141417; padding: 35px; border-radius: 15px; border: 1px solid #2a2a30; box-shadow: 0 20px 50px rgba(0,0,0,0.5); }
+        .status-bar { background: rgba(0, 255, 157, 0.05); border: 1px solid rgba(0, 255, 157, 0.2); padding: 12px; border-radius: 8px; font-family: monospace; font-size: 0.8rem; margin-bottom: 25px; color: var(--neon); }
+        textarea { width: 100%; height: 140px; background: #000; border: 1px solid #333; color: #00ff00; padding: 15px; border-radius: 8px; font-family: 'Courier New', monospace; box-sizing: border-box; }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin: 20px 0; }
+        button { width: 100%; padding: 18px; background: var(--neon); color: #000; border: none; border-radius: 10px; font-weight: 900; cursor: pointer; text-transform: uppercase; transition: 0.3s; }
+        button:hover { box-shadow: 0 0 20px rgba(0, 255, 157, 0.4); transform: translateY(-2px); }
+        label { display: block; margin-bottom: 5px; font-size: 0.75rem; color: #888; font-weight: bold; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h2>CHEETAH PRO OS 🐆</h2>
-    <div id="status" class="status-bar">READY_FOR_EXECUTION_MARCH_16_2026</div>
+    <h2 style="color: var(--neon); margin-top: 0;">CHEETAH PRO 🐆</h2>
+    <div id="status" class="status-bar">SYSTEM_READY | MARCH 16, 2026</div>
 
-    <label>1. Application Template (SKYLINE - Copy.docx)</label>
-    <div class="input-group" style="margin-bottom: 20px;">
-        <input type="file" id="tpl">
-    </div>
+    <label>1. TEMPLATE (SKYLINE - Copy.docx)</label>
+    <input type="file" id="tpl" style="margin-bottom: 20px;">
 
-    <label>2. Client Data Block</label>
-    <textarea id="raw" placeholder="LAST NAME: Cruz&#10;FIRST NAME: Juan..."></textarea>
+    <label>2. CLIENT DATA BLOCK</label>
+    <textarea id="raw" placeholder="PASTE DATA HERE..."></textarea>
 
-    <div class="file-grid">
-        <div class="input-group">
-            <label>Location Sketch</label>
+    <div class="grid">
+        <div>
+            <label>LOCATION SKETCH</label>
             <input type="file" id="sk">
         </div>
-        <div class="input-group">
-            <label>Signature</label>
+        <div>
+            <label>SIGNATURE</label>
             <input type="file" id="si">
         </div>
     </div>
 
-    <button onclick="executeEngine()">Generate Skyline Document</button>
+    <button onclick="runExecution()">Generate Document</button>
 </div>
 
 <script>
@@ -174,43 +61,44 @@
         return match ? match[1].trim() : "---";
     }
 
-    async function executeEngine() {
-    const status = document.getElementById('status');
-    const tFile = document.getElementById('tpl').files[0];
-    const raw = document.getElementById('raw').value;
-    const skFile = document.getElementById('sk').files[0];
-    const siFile = document.getElementById('si').files[0];
+    async function runExecution() {
+        const status = document.getElementById('status');
+        const tFile = document.getElementById('tpl').files[0];
+        const raw = document.getElementById('raw').value;
+        const skFile = document.getElementById('sk').files[0];
+        const siFile = document.getElementById('si').files[0];
 
-    if (!tFile || !raw) return alert("Missing Template or Data Block!");
+        if (!tFile || !raw) return alert("Paki-upload ang template at i-paste ang data!");
 
-    try {
-        if (status) {
-            status.innerText = "INITIALIZING_MODERN_ENGINE...";
-            status.style.color = "var(--blue)";
-        }
+        try {
+            status.innerText = "⚙️ INITIALIZING_RELIABLE_ENGINE...";
+            
+            const tBuf = await getBuf(tFile);
+            const skBuf = await getBuf(skFile);
+            const siBuf = await getBuf(siFile);
 
-        const tBuf = await getBuf(tFile);
-        const skBuf = await getBuf(skFile);
-        const siBuf = await getBuf(siFile);
+            const zip = new PizZip(tBuf);
 
-        // --- NUCLEAR FIX PARA SA 'createReport' ---
-        let createReport;
-        if (window.docxTemplates) {
-            // Tinitingnan lahat ng posibleng pagtataguan ng function
-            createReport = window.docxTemplates.createReport || 
-                           window.docxTemplates.default || 
-                           (window.docxTemplates.default && window.docxTemplates.default.createReport) ||
-                           window.docxTemplates;
-        }
+            // Gagamit tayo ng CUSTOM DELIMITERS '+++' para sa template mo
+            const imgOptions = {
+                centered: false,
+                getImage: (tagValue) => tagValue,
+                getSize: (img, tagValue, tagName) => {
+                    if (tagName === "sketch") return [450, 250];
+                    if (tagName === "signature") return [160, 80];
+                    return [100, 100];
+                }
+            };
 
-        if (typeof createReport !== 'function') {
-            throw new Error("Library not loaded correctly. Check internet connection.");
-        }
-        // ------------------------------------------
+            // Sigurado tayong window.docxtemplater ang tawag dito
+            const doc = new window.docxtemplater(zip, {
+                modules: [new window.ImageModule(imgOptions)],
+                delimiters: { start: '+++', end: '+++' }, // Para sa +++sketch+++ tags mo
+                paragraphLoop: true,
+                linebreaks: true
+            });
 
-        const report = await createReport({
-            template: tBuf,
-            data: {
+            doc.render({
                 last_name: extract(raw, "LAST NAME"),
                 first_name: extract(raw, "FIRST NAME"),
                 middle_name: extract(raw, "MIDDLE NAME"),
@@ -222,32 +110,24 @@
                 barangay: extract(raw, "BARANGAY"),
                 municipality: extract(raw, "MUNICIPALITY"),
                 date: "March 16, 2026",
-                // Image handling: Siguraduhin na {IMAGE sketch} ang nasa Word 
-                sketch: skBuf ? { width: 12, height: 7, data: skBuf, extension: '.png' } : null,
-                signature: siBuf ? { width: 4, height: 2, data: siBuf, extension: '.png' } : null
-            },
-            cmdDelimiter: ['{', '}']
-        });
+                sketch: skBuf,      // Magiging +++sketch+++
+                signature: siBuf    // Magiging +++signature+++
+            });
 
-        const blob = new Blob([report], { type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' });
-        const clientName = extract(raw, "LAST NAME") || "Client";
-        saveAs(blob, `SKYLINE_PRO_${clientName}.docx`);
+            const out = doc.getZip().generate({ 
+                type: "blob",
+                mimeType: "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+            });
 
-        if (status) {
-            status.innerText = "SUCCESS: DOCUMENT_GENERATED";
-            status.style.color = "var(--neon)";
+            saveAs(out, `SKYLINE_APP_${extract(raw, "LAST NAME")}.docx`);
+            status.innerText = "✅ SUCCESS: FILE_DOWNLOADED";
+
+        } catch (err) {
+            console.error(err);
+            status.innerText = "❌ ERROR: " + err.message;
+            alert("Error: " + err.message);
         }
-
-    } catch (err) {
-        console.error("DEBUG ENGINE ERROR:", err);
-        if (status) {
-            status.innerText = "CRITICAL_ERROR: " + err.message;
-            status.style.color = "#ff4d4d";
-        }
-        alert("Engine Error: " + err.message);
     }
-}
 </script>
-
 </body>
 </html>
