@@ -34,7 +34,6 @@
             padding: 20px;
         }
 
-        /* Glassmorphism Card with Fade-In Animation */
         .workspace {
             background: var(--card-bg);
             backdrop-filter: blur(12px);
@@ -58,7 +57,6 @@
             margin-bottom: 35px;
         }
 
-        /* Gradient Text for Header */
         h2 {
             margin: 0;
             font-weight: 800;
@@ -86,7 +84,6 @@
             margin-bottom: 10px;
         }
 
-        /* Custom File Upload Styling */
         .file-upload-wrapper {
             position: relative;
             margin-bottom: 25px;
@@ -116,10 +113,9 @@
         }
 
         #tpl {
-            display: none; /* Hide default ugly input */
+            display: none;
         }
 
-        /* Textarea Styling */
         textarea {
             width: 100%;
             padding: 16px;
@@ -132,7 +128,7 @@
             box-sizing: border-box;
             margin-bottom: 25px;
             transition: all 0.3s ease;
-            height: 160px;
+            height: 180px;
             resize: none;
             line-height: 1.5;
         }
@@ -144,11 +140,6 @@
             box-shadow: 0 0 0 4px var(--focus-ring);
         }
 
-        textarea::placeholder {
-            color: #94a3b8;
-        }
-
-        /* Premium Button */
         button {
             width: 100%;
             padding: 18px;
@@ -158,7 +149,6 @@
             border-radius: 12px;
             font-weight: 600;
             font-size: 1.05rem;
-            letter-spacing: 0.5px;
             cursor: pointer;
             transition: all 0.3s ease;
             box-shadow: 0 10px 20px rgba(79, 70, 229, 0.2);
@@ -167,10 +157,6 @@
         button:hover {
             transform: translateY(-2px);
             box-shadow: 0 15px 25px rgba(79, 70, 229, 0.3);
-        }
-
-        button:active {
-            transform: translateY(1px);
         }
 
         #status {
@@ -200,14 +186,13 @@
     </div>
 
     <label>2. Client Information Block</label>
-    <textarea id="raw" placeholder="LAST NAME: Dela Cruz&#10;FIRST NAME: Juan&#10;MUNICIPALITY: Binangonan&#10;..."></textarea>
+    <textarea id="raw" placeholder="Paste full client format here..."></textarea>
 
     <button onclick="handleGenerate()">Generate Application</button>
     <div id="status"></div>
 </div>
 
 <script>
-    // Update File Upload Label when a file is selected
     document.getElementById('tpl').addEventListener('change', function(e) {
         const fileName = e.target.files[0] ? e.target.files[0].name : "📄 Upload SKYLINE.docx Template";
         document.getElementById('upload-label').innerText = fileName;
@@ -226,19 +211,49 @@
         r.readAsArrayBuffer(f);
     });
 
-    function extract(text, label) {
-        const regex = new RegExp(label + "\\s*:\\s*(.*)", "i");
-        const match = text.match(regex);
-        return match ? match[1].trim() : "";
-    }
-
     function getFormattedDate() {
         const today = new Date();
         return today.toLocaleDateString('en-US', { 
-            year: 'numeric', 
-            month: 'long', 
-            day: 'numeric' 
+            year: 'numeric', month: 'long', day: 'numeric' 
         });
+    }
+
+    // --- SMART PARSER (Para sa multi-line na walang colon) ---
+    function parseData(rawText) {
+        const lines = rawText.split('\n');
+        const data = {};
+        let currentKey = "";
+
+        for (let line of lines) {
+            line = line.trim();
+            if (!line) continue; 
+            
+            // Ignorahin ang mga checkbox lines sa normal parsing para di magulo
+            if (line.startsWith('(')) continue;
+
+            const colonIndex = line.indexOf(':');
+            
+            if (colonIndex !== -1) {
+                currentKey = line.substring(0, colonIndex).trim().toUpperCase();
+                const value = line.substring(colonIndex + 1).trim();
+                data[currentKey] = value;
+            } else if (currentKey) {
+                data[currentKey] = data[currentKey] ? data[currentKey] + " " + line : line;
+            }
+        }
+        return data;
+    }
+
+    // --- CHECKBOX DETECTOR ---
+    // Hahanapin nito kung may (x) o (/) sa tabi ng salita na hinahanap natin
+    function getCheck(rawText, optionName) {
+        // Regex: Naghahanap ng (x), (X), (/), o (v) bago ang salita
+        const regex = new RegExp(`\\([xX/vV]\\)\\s*${optionName}`, 'i');
+        if (regex.test(rawText)) {
+            return "☑"; // Checkmark symbol kapag meron
+        } else {
+            return "☐"; // Empty box symbol kapag wala
+        }
     }
 
     function handleGenerate() {
@@ -268,36 +283,60 @@
                 linebreaks: true
             });
 
-            // Map the data - Naka-ALL CAPS lahat maliban sa email
+            const clientData = parseData(rawText);
+
+            // Helper function para makuha ang data at naka-ALL CAPS
+            function get(key, isEmail = false) {
+                let val = clientData[key.toUpperCase()] || "";
+                return isEmail ? val : val.toUpperCase();
+            }
+
+            // Map all data
             doc.render({
                 date: getFormattedDate().toUpperCase(), 
-                last_name: extract(rawText, "LAST NAME").toUpperCase(),
-                first_name: extract(rawText, "FIRST NAME").toUpperCase(),
-                middle_name: extract(rawText, "MIDDLE NAME").toUpperCase(),
-                hp: extract(rawText, "HOUSE PHONE").toUpperCase(),
-                op: extract(rawText, "OFFICE PHONE").toUpperCase(),
-                mobile: extract(rawText, "MOBILE PHONE").toUpperCase(),
-                email: extract(rawText, "EMAIL ADDRESS"), 
-                id_no: extract(rawText, "ID TYPE/NO.").toUpperCase(),
-                birthdate: extract(rawText, "BIRTHDATE").toUpperCase(),
-                age: extract(rawText, "AGE").toUpperCase(),
-                sex: extract(rawText, "SEX").toUpperCase(),
-                civil_status: extract(rawText, "CIVIL STATUS").toUpperCase(),
-                spouse_name: extract(rawText, "SPOUSE NAME").toUpperCase(),
-                house_no: extract(rawText, "HOUSE/BLOCK/UNIT NO.").toUpperCase(),
-                street: extract(rawText, "STREET").toUpperCase(),
-                building: extract(rawText, "BUILDING").toUpperCase(),
-                subd: extract(rawText, "DISTRICT/SUBDIVISION").toUpperCase(),
-                barangay: extract(rawText, "BARANGAY").toUpperCase(),
-                municipality: extract(rawText, "MUNICIPALITY").toUpperCase(),
-                occupation: extract(rawText, "OCCUPATION/POSITION").toUpperCase(),
-                employer: extract(rawText, "EMPLOYER").toUpperCase(),
-                occ_address: extract(rawText, "ADDRESS").toUpperCase(),
-                spouse_occ: extract(rawText, "SPOUSE OCCUPATION").toUpperCase(),
-                spouse_emp: extract(rawText, "SPOUSE EMPLOYER").toUpperCase(),
-                spouse_add_occ: extract(rawText, "SPOUSE EMPLOYER ADDRESS").toUpperCase(),
-                plan_name: extract(rawText, "PLAN NEEDED").toUpperCase(),
-                plan_value: extract(rawText, "PLAN NEEDED").replace(/\D/g, ""),
+                last_name: get("LAST NAME"),
+                first_name: get("FIRST NAME"),
+                middle_name: get("MIDDLE NAME"),
+                hp: get("HOUSE PHONE"),
+                op: get("OFFICE PHONE"),
+                mobile: get("MOBILE PHONE"),
+                email: get("EMAIL ADDRESS", true), 
+                id_no: get("ID TYPE/NO."), // Kukunin buo pati word na "PASSPORT"
+                
+                birthdate: get("BIRTHDATE"),
+                age: get("AGE"),
+                sex: get("SEX"),
+                civil_status: get("CIVIL STATUS"),
+                spouse_name: get("SPOUSE NAME"),
+                
+                house_no: get("HOUSE/BLOCK/UNIT NO."),
+                street: get("STREET"),
+                building: get("BUILDING"),
+                subd: get("DISTRICT/SUBDIVISION"),
+                barangay: get("BARANGAY"),
+                municipality: get("MUNICIPALITY"),
+                
+                occupation: get("OCCUPATION/POSITION"),
+                employer: get("EMPLOYER"), // Mababasa na niya pati "HOLDINGS INC." sa next line!
+                occ_address: get("ADDRESS"),
+                spouse_occ: get("SPOUSE OCCUPATION"),
+                spouse_emp: get("SPOUSE EMPLOYER"),
+                spouse_add_occ: get("SPOUSE EMPLOYER ADDRESS"),
+                
+                // === CHECKBOX VARIABLES ===
+                // Gamitin ang {chk_owned}, {chk_rent}, etc sa mismong Word Document
+                
+                // HOUSE CATEGORY
+                chk_owned: getCheck(rawText, "OWNED"),
+                chk_rent: getCheck(rawText, "RENT"),
+                chk_living_rel: getCheck(rawText, "LIVING WITH RELATIVES"),
+                
+                // HOME TYPE CATEGORY
+                chk_single: getCheck(rawText, "SINGLE DETACHED"),
+                chk_condo: getCheck(rawText, "CONDOMINIUM"),
+                chk_apt: getCheck(rawText, "APARTMENT"),
+                chk_townhouse: getCheck(rawText, "TOWNHOUSE"),
+                chk_others: getCheck(rawText, "OTHERS")
             });
 
             const out = doc.getZip().generate({ 
@@ -305,10 +344,10 @@
                 mimeType: "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
             });
 
-            const lName = extract(rawText, "LAST NAME") || "Unknown";
-            const fName = extract(rawText, "FIRST NAME") || "Client";
-            const muni = extract(rawText, "MUNICIPALITY") || "No_City";
-            
+            // Smart Filename
+            const lName = get("LAST NAME") || "UNKNOWN";
+            const fName = get("FIRST NAME") || "CLIENT";
+            const muni = get("MUNICIPALITY") || "NO_CITY";
             const fileName = `${lName}, ${fName} - ${muni}.docx`;
 
             saveAs(out, fileName);
