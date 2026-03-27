@@ -388,6 +388,7 @@ PLAN VALUE:</pre>
     </div>
 
     <label>2. Client Information Block</label>
+<textarea id="raw" class="main-input" placeholder="Paste full client format here..."></textarea>
     <label>3. Upload Signature</label>
 <div class="file-upload-wrapper">
     <input type="file" id="signature" accept="image/*">
@@ -474,20 +475,20 @@ style="margin-bottom:20px; padding:10px; border-radius:8px; border:none; backgro
 </div>
 
 <script>
-    window.addEventListener("DOMContentLoaded", () => {
+   window.addEventListener("DOMContentLoaded", () => {
     const apiInput = document.getElementById("apiKey");
 
-    // LOAD saved API key
+    if (!apiInput) return; // 🔥 prevent error
+
     const savedKey = localStorage.getItem("removeBgApiKey");
     if (savedKey) {
         apiInput.value = savedKey;
     }
 
-    // AUTO SAVE habang nagta-type
     apiInput.addEventListener("input", (e) => {
         localStorage.setItem("removeBgApiKey", e.target.value);
     });
-});
+});    
     // --- UI TOGGLES ---
     function togglePanel() { document.getElementById('sidePanel').classList.toggle('active'); }
     
@@ -630,7 +631,7 @@ style="margin-bottom:20px; padding:10px; border-radius:8px; border:none; backgro
         const tFile = document.getElementById('tpl').files[0];
         const rawText = document.getElementById('raw').value;
 
-        if (!tFile || !rawText) {
+        if (!tFile || !rawText.trim()) {
             status.innerHTML = "⚠️ Please upload template and paste data."; status.style.color = "#ef4444"; return;
         }
 
