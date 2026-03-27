@@ -723,7 +723,7 @@ if (signatureFile) {
     }
 }
 
-const imageModule = new window.ImageModule({
+const imageModule = new window.ImageModuleFree({
     getImage: function(tagValue) {
         return fetch(tagValue).then(res => res.arrayBuffer());
     },
