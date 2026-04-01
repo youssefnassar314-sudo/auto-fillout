@@ -369,6 +369,27 @@ PLAN VALUE:</pre>
             </svg>
             Copy Template
         </button>
+        <hr style="border: 0; border-top: 1px solid var(--border); margin: 25px 0 15px 0;">
+        <h3 style="font-size: 1rem; color: var(--primary); margin: 0 0 10px 0; display: flex; align-items: center; gap: 8px;">
+            <svg width="18" height="18" fill="none" stroke="#4f46e5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>
+            Plan Terms
+        </h3>
+        
+        <select id="planSelect" class="main-input" style="padding: 12px; margin-bottom: 10px; cursor: pointer;" onchange="updatePlanTerms()">
+            <option value="699">Plan 699</option>
+            <option value="999">Plan 999</option>
+            <option value="1250">Plan 1250</option>
+            <option value="1500">Plan 1500</option>
+            <option value="2500">Plan 2500</option>
+            <option value="4000">Plan 4000</option>
+        </select>
+        
+        <pre class="template-box" id="planTermsBox" style="height: 180px; margin-bottom: 15px;"></pre>
+        
+        <button class="primary-btn" onclick="copyPlanTerms(this)" style="padding: 14px; font-size: 0.95rem;">
+            <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+            Copy Plan Terms
+        </button>
     </div>
 </div>
 
@@ -543,6 +564,56 @@ PLAN VALUE:</pre>
             }, 2000);
         });
     }
+
+    function updatePlanTerms() {
+        const plan = document.getElementById('planSelect').value;
+        const termsText = `PLAN ${plan} Payment & Installation
+
+• ₱${plan} lamang ang babayaran upon installation
+• Ito ay deposit na magagamit kapag ipapatanggal ang service
+• May 24-month lock-in period (2 years) Disconnection & Contract
+• Para sa voluntary disconnection, kailangan mag-submit ng written request sa branch at least 30 days before
+• Priority disconnection kapag fully paid at walang outstanding balance
+• Kung walang written request, magtutuloy ang contract
+• Kailangang ibalik ang modem/router o cable box kapag terminated ang service Changes & Transfers
+• May ₱500 fee para sa upgrade/downgrade habang nasa lock-in period
+• Pwede ilipat ang modem/router, pero kailangan iprocess sa branch Excess Materials
+(Applicable lang kung may excess na sasabihin ang installer)
+Outdoor Fiber:
+• Free hanggang 120 meters
+• 200 meters – ₱700
+• 300 meters – ₱1,000
+Indoor Fiber:
+• Free hanggang 15 meters
+• ₱10 per meter kapag sumobra
+• Ang excess materials ay idadagdag sa bill at payable within 2 months
+• Kailangang maibalik ang materials in good condition kapag nag-terminate para maiwasan ang extra charges Billing
+• Installation (1–15): lalabas ang bill sa 17th ng same month
+• Installation (16–31): lalabas sa 17th ng next month (or upon request)
+• First bill: Pro-rated
+(₱${plan} ÷ 30 × days used)
+• Next bills: ₱${plan}/month
+• Due date: 30/31 ng buwan
+• May extension hanggang 10 ng next month`;
+        
+        document.getElementById('planTermsBox').innerText = termsText;
+    }
+
+    function copyPlanTerms(btnElement) {
+        const termsText = document.getElementById('planTermsBox').innerText;
+        navigator.clipboard.writeText(termsText).then(() => {
+            const originalHTML = btnElement.innerHTML;
+            btnElement.innerHTML = `✓ Copied to Clipboard`;
+            btnElement.style.background = "#10b981";
+            setTimeout(() => {
+                btnElement.innerHTML = originalHTML;
+                btnElement.style.background = "var(--accent-gradient)";
+            }, 2000);
+        });
+    }
+
+    // Auto-load yung initial terms kapag nagbukas yung app
+    document.addEventListener('DOMContentLoaded', updatePlanTerms);
 
     // --- DOCUMENT GENERATION LOGIC ---
     document.getElementById('tpl').addEventListener('change', function(e) {
